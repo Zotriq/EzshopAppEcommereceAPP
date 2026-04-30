@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "584406791511",
+    "project_id": "ezshopzo",
+    "storage_bucket": "ezshopzo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:584406791511:android:6843e55d969abf56a5fa12",
+        "android_client_info": {
+          "package_name": "com.example.ezshopapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAEySTPzxoV0xZjxw4GmNRH3KiKqwFawc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
