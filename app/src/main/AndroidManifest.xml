@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EzshopApp" >
         <activity
-            android:name=".detailproduct"
+            android:name=".ProductDetailActivity"
             android:exported="false" />
         <activity
             android:name=".SplashActivity"
