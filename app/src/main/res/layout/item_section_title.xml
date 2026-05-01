@@ -1,12 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/sectionTitle"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingHorizontal="20dp"
     android:paddingTop="24dp"
-    android:paddingBottom="8dp"
-    android:fontFamily="@font/jakarta_bold"
-    android:text="Section Title"
-    android:textColor="@color/black"
-    android:textSize="18sp" />
+    android:paddingBottom="8dp">
+
+    <TextView
+        android:id="@+id/sectionTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/jakarta_bold"
+        android:text="Recommendation"
+        android:textColor="@color/black"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/seeAllRecommended"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:fontFamily="@font/inter_medium"
+        android:text="See All"
+        android:textColor="@color/purple_accent"
+        android:textSize="12sp"
+        android:clickable="true"
+        android:focusable="true" />
+
+</RelativeLayout>
