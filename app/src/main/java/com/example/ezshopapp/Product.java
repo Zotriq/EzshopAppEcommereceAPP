@@ -1,8 +1,10 @@
 package com.example.ezshopapp;
 
 import com.google.firebase.firestore.PropertyName;
+import java.io.Serializable;
+import java.util.List;
 
-public class Product {
+public class Product implements Serializable {
     private String name;
     private double price;
     private float rating;
@@ -12,9 +14,19 @@ public class Product {
     private boolean isBestSeller;
     private boolean isRecommended;
     private String category;
+    
+    // New fields for Detail Page
+    private String description;
+    private String condition;
+    private String weight;
+    private String brand;
+    private List<String> colors;
+    private String storeName;
+    private String storeImageUrl;
 
     public Product() {}
 
+    // Getters and Setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -49,4 +61,25 @@ public class Product {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getCondition() { return condition; }
+    public void setCondition(String condition) { this.condition = condition; }
+
+    public String getWeight() { return weight; }
+    public void setWeight(String weight) { this.weight = weight; }
+
+    public String getBrand() { return brand; }
+    public void setBrand(String brand) { this.brand = brand; }
+
+    public List<String> getColors() { return colors; }
+    public void setColors(List<String> colors) { this.colors = colors; }
+
+    public String getStoreName() { return storeName; }
+    public void setStoreName(String storeName) { this.storeName = storeName; }
+
+    public String getStoreImageUrl() { return storeImageUrl; }
+    public void setStoreImageUrl(String storeImageUrl) { this.storeImageUrl = storeImageUrl; }
 }
