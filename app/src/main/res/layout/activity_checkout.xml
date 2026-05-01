@@ -1,59 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_light">
 
+    <!-- Top Bar (Fixed) -->
+    <RelativeLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:paddingHorizontal="20dp"
+        android:background="@color/bg_light"
+        android:elevation="2dp">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_back"
+            app:tint="@color/black" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:fontFamily="@font/jakarta_bold"
+            android:text="Checkout"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+    </RelativeLayout>
+
+    <!-- Scrollable Content -->
+    <!-- layout_above ensures this stops before the bottom bar -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="100dp"
-        android:clipToPadding="false">
+        android:layout_below="@id/topBar"
+        android:layout_above="@id/bottomBarCard"
+        android:clipToPadding="false"
+        android:paddingBottom="20dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-            <!-- Top Bar -->
-            <RelativeLayout
-                android:id="@+id/topBar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:paddingHorizontal="20dp"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <ImageView
-                    android:id="@+id/btnBack"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_back"
-                    app:tint="@color/black" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:fontFamily="@font/jakarta_bold"
-                    android:text="Checkout"
-                    android:textColor="@color/black"
-                    android:textSize="18sp" />
-            </RelativeLayout>
 
             <!-- Product List Summary -->
             <TextView
                 android:id="@+id/labelProductList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:fontFamily="@font/jakarta_bold"
                 android:paddingHorizontal="20dp"
                 android:text="Product List"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/topBar" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/checkoutRecyclerView"
@@ -161,54 +166,62 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="12dp"
-                app:layout_constraintTop_toBottomOf="@id/labelPayment">
+                android:layout_marginBottom="24dp"
+                app:layout_constraintTop_toBottomOf="@id/labelPayment"
+                app:layout_constraintBottom_toBottomOf="parent">
 
                 <RadioButton
                     android:id="@+id/rbJazzCash"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="50dp"
                     android:fontFamily="@font/inter_medium"
+                    android:paddingStart="12dp"
                     android:text="JazzCash"
                     android:textSize="14sp" />
 
                 <RadioButton
                     android:id="@+id/rbEasyPaisa"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="50dp"
                     android:fontFamily="@font/inter_medium"
+                    android:paddingStart="12dp"
                     android:text="EasyPaisa"
                     android:textSize="14sp" />
 
                 <RadioButton
                     android:id="@+id/rbNayaPay"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="50dp"
                     android:fontFamily="@font/inter_medium"
+                    android:paddingStart="12dp"
                     android:text="NayaPay"
                     android:textSize="14sp" />
 
                 <RadioButton
                     android:id="@+id/rbSadaPay"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="50dp"
                     android:fontFamily="@font/inter_medium"
+                    android:paddingStart="12dp"
                     android:text="SadaPay"
                     android:textSize="14sp" />
 
                 <RadioButton
                     android:id="@+id/rbBankTransfer"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="50dp"
                     android:fontFamily="@font/inter_medium"
-                    android:text="Direct Bank Transfer (Askari/HBL)"
+                    android:paddingStart="12dp"
+                    android:text="Direct Bank Transfer"
                     android:textSize="14sp" />
 
                 <RadioButton
                     android:id="@+id/rbCOD"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="50dp"
                     android:checked="true"
                     android:fontFamily="@font/inter_medium"
+                    android:paddingStart="12dp"
                     android:text="Cash on Delivery (COD)"
                     android:textSize="14sp" />
             </RadioGroup>
@@ -218,9 +231,10 @@
 
     <!-- Fixed Bottom Bar -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/bottomBarCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
+        android:layout_alignParentBottom="true"
         app:cardCornerRadius="0dp"
         app:cardElevation="16dp">
 
@@ -267,4 +281,4 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>
