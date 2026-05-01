@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView mainRecyclerView;
     private List<Product> bestSellersList, recommendationsList;
+    private List<Product> allBestSellers, allRecommendations; // Master lists for search
     private MainHomeAdapter mainHomeAdapter;
     private FirebaseFirestore db;
 
@@ -34,6 +35,11 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         db = FirebaseFirestore.getInstance();
         
+        allBestSellers = new ArrayList<>();
+        allRecommendations = new ArrayList<>();
+        bestSellersList = new ArrayList<>();
+        recommendationsList = new ArrayList<>();
+
         setupRecyclerView();
         fetchProducts();
         setupBottomNav();
@@ -41,13 +47,35 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         mainRecyclerView = findViewById(R.id.mainRecyclerView);
-        bestSellersList = new ArrayList<>();
-        recommendationsList = new ArrayList<>();
 
-        mainHomeAdapter = new MainHomeAdapter(bestSellersList, recommendationsList);
+        // Pass lists and the search listener to the adapter
+        mainHomeAdapter = new MainHomeAdapter(bestSellersList, recommendationsList, this::filter);
 
         mainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mainRecyclerView.setAdapter(mainHomeAdapter);
+    }
+
+    private void filter(String query) {
+        bestSellersList.clear();
+        recommendationsList.clear();
+
+        if (query == null || query.isEmpty()) {
+            bestSellersList.addAll(allBestSellers);
+            recommendationsList.addAll(allRecommendations);
+        } else {
+            String lowerCaseQuery = query.toLowerCase().trim();
+            for (Product product : allBestSellers) {
+                if (product.getName().toLowerCase().contains(lowerCaseQuery)) {
+                    bestSellersList.add(product);
+                }
+            }
+            for (Product product : allRecommendations) {
+                if (product.getName().toLowerCase().contains(lowerCaseQuery)) {
+                    recommendationsList.add(product);
+                }
+            }
+        }
+        mainHomeAdapter.notifyDataSetChanged();
     }
 
     private void fetchProducts() {
@@ -55,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
+                        allBestSellers.clear();
+                        allRecommendations.clear();
                         bestSellersList.clear();
                         recommendationsList.clear();
                         
@@ -62,9 +92,11 @@ public class MainActivity extends AppCompatActivity {
                             Product product = document.toObject(Product.class);
                             
                             if (product.isBestSeller()) {
+                                allBestSellers.add(product);
                                 bestSellersList.add(product);
                             }
                             if (product.isRecommended()) {
+                                allRecommendations.add(product);
                                 recommendationsList.add(product);
                             }
                         }
