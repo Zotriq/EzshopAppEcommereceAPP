@@ -1,10 +1,13 @@
 package com.example.ezshopapp;
 
+import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.firestore.PropertyName;
 import java.io.Serializable;
 import java.util.List;
 
 public class Product implements Serializable {
+    @DocumentId
+    private String documentId; // Automatically filled by Firestore
     private String name;
     private double price;
     private float rating;
@@ -27,6 +30,9 @@ public class Product implements Serializable {
     public Product() {}
 
     // Getters and Setters
+    public String getDocumentId() { return documentId; }
+    public void setDocumentId(String documentId) { this.documentId = documentId; }
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
