@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,11 +14,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
@@ -30,6 +35,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private boolean isDescriptionExpanded = false;
     private ViewPager2 productViewPager;
+    private String selectedColor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +64,9 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         // 5. Setup Reviews
         setupReviewList();
+
+        // 6. Save to Last Seen
+        saveToLastSeen();
     }
 
     private void initUI() {
@@ -109,23 +118,100 @@ public class ProductDetailActivity extends AppCompatActivity {
             isDescriptionExpanded = !isDescriptionExpanded;
         });
 
-        btnAddToCart.setOnClickListener(v -> {
-            Toast.makeText(this, "Added to Cart!", Toast.LENGTH_SHORT).show();
-        });
+        btnAddToCart.setOnClickListener(v -> addToCart());
+    }
+
+    private void saveToLastSeen() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Log.d(TAG, "saveToLastSeen: User not logged in");
+            return;
+        }
+        
+        if (product.getDocumentId() == null) {
+            Log.d(TAG, "saveToLastSeen: Product ID is null");
+            return;
+        }
+
+        Log.d(TAG, "saveToLastSeen: Saving product " + product.getName());
+
+        Map<String, Object> lastSeenData = new HashMap<>();
+        lastSeenData.put("userId", user.getUid());
+        lastSeenData.put("productId", product.getDocumentId());
+        lastSeenData.put("timestamp", FieldValue.serverTimestamp());
+        lastSeenData.put("name", product.getName());
+        lastSeenData.put("price", product.getPrice());
+        lastSeenData.put("imageUrl", product.getImageUrl());
+        lastSeenData.put("rating", product.getRating());
+        lastSeenData.put("soldCount", product.getSoldCount());
+        lastSeenData.put("location", product.getLocation());
+
+        db.collection("last_seen")
+                .document(user.getUid() + "_" + product.getDocumentId())
+                .set(lastSeenData)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "saveToLastSeen: Success"))
+                .addOnFailureListener(e -> Log.e(TAG, "saveToLastSeen: Failed", e));
+    }
+
+    private void addToCart() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Toast.makeText(this, "Please login to add items to cart", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (selectedColor == null && product.getColors() != null && !product.getColors().isEmpty()) {
+            selectedColor = product.getColors().get(0);
+        }
+
+        String userId = user.getUid();
+        String productId = product.getDocumentId();
+
+        db.collection("cart")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("productId", productId)
+                .whereEqualTo("selectedColor", selectedColor)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (!task.getResult().isEmpty()) {
+                            // Item already in cart, increment quantity
+                            String docId = task.getResult().getDocuments().get(0).getId();
+                            db.collection("cart").document(docId)
+                                    .update("quantity", FieldValue.increment(1))
+                                    .addOnSuccessListener(aVoid -> Toast.makeText(ProductDetailActivity.this, "Quantity updated in cart!", Toast.LENGTH_SHORT).show())
+                                    .addOnFailureListener(e -> Toast.makeText(ProductDetailActivity.this, "Failed to update cart", Toast.LENGTH_SHORT).show());
+                        } else {
+                            // Item not in cart, add new
+                            CartItem cartItem = new CartItem(
+                                    userId,
+                                    productId,
+                                    product.getName(),
+                                    product.getPrice(),
+                                    product.getImageUrl(),
+                                    selectedColor,
+                                    1
+                            );
+                            db.collection("cart")
+                                    .add(cartItem)
+                                    .addOnSuccessListener(documentReference -> Toast.makeText(ProductDetailActivity.this, "Added to cart!", Toast.LENGTH_SHORT).show())
+                                    .addOnFailureListener(e -> Toast.makeText(ProductDetailActivity.this, "Failed to add to cart", Toast.LENGTH_SHORT).show());
+                        }
+                    } else {
+                        Log.e(TAG, "Error checking cart", task.getException());
+                    }
+                });
     }
 
     private void setupImageSlider() {
         List<String> images = product.getImageUrls();
         if (images == null || images.isEmpty()) {
-            // Fallback to single imageUrl if list is empty
             images = new ArrayList<>();
             images.add(product.getImageUrl());
         }
 
         ImageSliderAdapter adapter = new ImageSliderAdapter(images);
         productViewPager.setAdapter(adapter);
-
-        // Setup dots (Optional: can add logic to update dots as user swipes)
     }
 
     private void setupColorList() {
@@ -133,8 +219,12 @@ public class ProductDetailActivity extends AppCompatActivity {
         List<String> colors = product.getColors();
         if (colors == null) colors = new ArrayList<>();
 
+        if (!colors.isEmpty()) {
+            selectedColor = colors.get(0);
+        }
+
         ColorAdapter adapter = new ColorAdapter(colors, (hex, position) -> {
-            // Sync with Image Slider: When a color is clicked, show the corresponding image
+            selectedColor = hex;
             if (product.getImageUrls() != null && position < product.getImageUrls().size()) {
                 productViewPager.setCurrentItem(position, true);
             }
