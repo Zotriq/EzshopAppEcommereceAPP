@@ -14,15 +14,20 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView mainRecyclerView;
     private List<Product> bestSellersList, recommendationsList;
-    private List<Product> allBestSellers, allRecommendations; // Master lists for search
+    private List<Product> allProducts; 
+    private List<String> categories;
+    private List<Banner> bannerList;
     private MainHomeAdapter mainHomeAdapter;
     private FirebaseFirestore db;
+    private String currentCategory = "All";
+    private String currentSearchQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +40,15 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         db = FirebaseFirestore.getInstance();
         
-        allBestSellers = new ArrayList<>();
-        allRecommendations = new ArrayList<>();
+        allProducts = new ArrayList<>();
         bestSellersList = new ArrayList<>();
         recommendationsList = new ArrayList<>();
+        bannerList = new ArrayList<>();
+        
+        categories = Arrays.asList("All", "Laptop", "Smartphone", "Monitor", "Mouse", "Keyboard", "Headset");
 
         setupRecyclerView();
+        fetchBanners();
         fetchProducts();
         setupBottomNav();
     }
@@ -48,29 +56,64 @@ public class MainActivity extends AppCompatActivity {
     private void setupRecyclerView() {
         mainRecyclerView = findViewById(R.id.mainRecyclerView);
 
-        // Pass lists and the search listener to the adapter
-        mainHomeAdapter = new MainHomeAdapter(bestSellersList, recommendationsList, this::filter);
+        mainHomeAdapter = new MainHomeAdapter(
+                bestSellersList, 
+                recommendationsList, 
+                categories, 
+                bannerList,
+                this::onSearch, 
+                this::onCategoryClick
+        );
 
         mainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mainRecyclerView.setAdapter(mainHomeAdapter);
     }
 
-    private void filter(String query) {
+    private void fetchBanners() {
+        db.collection("banners")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        bannerList.clear();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Banner banner = document.toObject(Banner.class);
+                            bannerList.add(banner);
+                        }
+                        mainHomeAdapter.notifyItemChanged(1); // Position of banner list in main recycler
+                    } else {
+                        Toast.makeText(this, "Error getting banners: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void onSearch(String query) {
+        currentSearchQuery = query;
+        applyFilters();
+    }
+
+    private void onCategoryClick(String category) {
+        currentCategory = category;
+        applyFilters();
+    }
+
+    private void applyFilters() {
         bestSellersList.clear();
         recommendationsList.clear();
 
-        if (query == null || query.isEmpty()) {
-            bestSellersList.addAll(allBestSellers);
-            recommendationsList.addAll(allRecommendations);
-        } else {
-            String lowerCaseQuery = query.toLowerCase().trim();
-            for (Product product : allBestSellers) {
-                if (product.getName().toLowerCase().contains(lowerCaseQuery)) {
+        String lowerCaseQuery = currentSearchQuery.toLowerCase().trim();
+
+        for (Product product : allProducts) {
+            boolean matchesCategory = currentCategory.equals("All") || 
+                                     (product.getCategory() != null && product.getCategory().equalsIgnoreCase(currentCategory));
+            
+            boolean matchesSearch = lowerCaseQuery.isEmpty() || 
+                                    product.getName().toLowerCase().contains(lowerCaseQuery);
+
+            if (matchesCategory && matchesSearch) {
+                if (product.isBestSeller()) {
                     bestSellersList.add(product);
                 }
-            }
-            for (Product product : allRecommendations) {
-                if (product.getName().toLowerCase().contains(lowerCaseQuery)) {
+                if (product.isRecommended()) {
                     recommendationsList.add(product);
                 }
             }
@@ -83,26 +126,12 @@ public class MainActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        allBestSellers.clear();
-                        allRecommendations.clear();
-                        bestSellersList.clear();
-                        recommendationsList.clear();
-                        
+                        allProducts.clear();
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Product product = document.toObject(Product.class);
-                            
-                            if (product.isBestSeller()) {
-                                allBestSellers.add(product);
-                                bestSellersList.add(product);
-                            }
-                            if (product.isRecommended()) {
-                                allRecommendations.add(product);
-                                recommendationsList.add(product);
-                            }
+                            allProducts.add(product);
                         }
-                        
-                        mainHomeAdapter.notifyDataSetChanged();
-
+                        applyFilters();
                     } else {
                         Toast.makeText(this, "Error getting products: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
