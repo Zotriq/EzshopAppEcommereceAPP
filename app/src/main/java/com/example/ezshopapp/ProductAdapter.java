@@ -1,5 +1,6 @@
 package com.example.ezshopapp;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +43,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 .load(product.getImageUrl())
                 .placeholder(R.drawable.bg_product_image_grey)
                 .into(holder.image);
+
+        // Click listener to open detail page
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(holder.itemView.getContext(), ProductDetailActivity.class);
+            intent.putExtra("product", product);
+            holder.itemView.getContext().startActivity(intent);
+        });
     }
 
     @Override
