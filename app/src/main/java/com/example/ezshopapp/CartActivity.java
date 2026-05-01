@@ -1,5 +1,6 @@
 package com.example.ezshopapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +16,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +33,7 @@ public class CartActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String userId;
     private ListenerRegistration cartListener;
+    private double totalPrice = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,10 +64,13 @@ public class CartActivity extends AppCompatActivity {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         
         findViewById(R.id.btnCheckout).setOnClickListener(v -> {
-            if (cartItemList.isEmpty()) {
+            if (cartItemList == null || cartItemList.isEmpty()) {
                 Toast.makeText(this, "Your cart is empty", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Proceeding to checkout...", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(CartActivity.this, CheckoutActivity.class);
+                intent.putExtra("cartItems", (Serializable) cartItemList);
+                intent.putExtra("totalPrice", totalPrice);
+                startActivity(intent);
             }
         });
     }
@@ -118,17 +124,17 @@ public class CartActivity extends AppCompatActivity {
 
                     if (value != null) {
                         cartItemList.clear();
-                        double total = 0;
+                        totalPrice = 0;
                         for (DocumentSnapshot doc : value.getDocuments()) {
                             CartItem item = doc.toObject(CartItem.class);
                             if (item != null) {
                                 item.setCartItemId(doc.getId());
                                 cartItemList.add(item);
-                                total += item.getPrice() * item.getQuantity();
+                                totalPrice += item.getPrice() * item.getQuantity();
                             }
                         }
                         cartAdapter.notifyDataSetChanged();
-                        tvTotalPrice.setText(String.format("$ %.2f", total));
+                        tvTotalPrice.setText(String.format("$ %.2f", totalPrice));
                         
                         if (cartItemList.isEmpty()) {
                             tvEmptyCart.setVisibility(View.VISIBLE);
@@ -142,7 +148,6 @@ public class CartActivity extends AppCompatActivity {
     }
 
     private void fetchLastSeen() {
-        // Fetch without orderBy to avoid needing a composite index in Firestore
         db.collection("last_seen")
                 .whereEqualTo("userId", userId)
                 .limit(20)
@@ -151,7 +156,6 @@ public class CartActivity extends AppCompatActivity {
                     if (task.isSuccessful() && task.getResult() != null) {
                         List<DocumentSnapshot> docs = task.getResult().getDocuments();
                         
-                        // Manual sort by timestamp descending
                         Collections.sort(docs, (d1, d2) -> {
                             java.util.Date t1 = d1.getDate("timestamp");
                             java.util.Date t2 = d2.getDate("timestamp");
@@ -174,9 +178,6 @@ public class CartActivity extends AppCompatActivity {
                         if (tvLastSeenTitle != null) {
                             tvLastSeenTitle.setVisibility(lastSeenList.isEmpty() ? View.GONE : View.VISIBLE);
                         }
-                        Log.d(TAG, "Fetched last seen items: " + lastSeenList.size());
-                    } else {
-                        Log.e(TAG, "Error fetching last seen", task.getException());
                     }
                 });
     }

@@ -5,18 +5,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
-
 import java.util.List;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
     private final List<CartItem> cartItems;
     private final OnCartActionClickListener listener;
+    private boolean isCheckoutMode = false;
 
     public interface OnCartActionClickListener {
         void onIncrease(CartItem item);
@@ -27,6 +25,12 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public CartAdapter(List<CartItem> cartItems, OnCartActionClickListener listener) {
         this.cartItems = cartItems;
         this.listener = listener;
+    }
+
+    public CartAdapter(List<CartItem> cartItems, OnCartActionClickListener listener, boolean isCheckoutMode) {
+        this.cartItems = cartItems;
+        this.listener = listener;
+        this.isCheckoutMode = isCheckoutMode;
     }
 
     @NonNull
@@ -49,15 +53,23 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                 .placeholder(R.drawable.bg_product_image_grey)
                 .into(holder.image);
 
-        holder.btnPlus.setOnClickListener(v -> listener.onIncrease(item));
-        holder.btnMinus.setOnClickListener(v -> listener.onDecrease(item));
-        holder.btnDelete.setOnClickListener(v -> listener.onDelete(item));
+        if (isCheckoutMode) {
+            holder.btnPlus.setVisibility(View.GONE);
+            holder.btnMinus.setVisibility(View.GONE);
+            holder.btnDelete.setVisibility(View.GONE);
+        } else {
+            holder.btnPlus.setVisibility(View.VISIBLE);
+            holder.btnMinus.setVisibility(View.VISIBLE);
+            holder.btnDelete.setVisibility(View.VISIBLE);
+            
+            holder.btnPlus.setOnClickListener(v -> { if (listener != null) listener.onIncrease(item); });
+            holder.btnMinus.setOnClickListener(v -> { if (listener != null) listener.onDecrease(item); });
+            holder.btnDelete.setOnClickListener(v -> { if (listener != null) listener.onDelete(item); });
+        }
     }
 
     @Override
-    public int getItemCount() {
-        return cartItems.size();
-    }
+    public int getItemCount() { return cartItems.size(); }
 
     static class CartViewHolder extends RecyclerView.ViewHolder {
         ImageView image, btnDelete, btnPlus, btnMinus;
