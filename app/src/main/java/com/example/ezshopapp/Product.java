@@ -7,18 +7,18 @@ import java.util.List;
 
 public class Product implements Serializable {
     @DocumentId
-    private String documentId; // Automatically filled by Firestore
+    private String documentId;
     private String name;
     private double price;
     private float rating;
     private String location;
-    private String imageUrl;
+    private String imageUrl; // Keep this as the "thumbnail"
+    private List<String> imageUrls; // List for the slider
     private Object soldCount;
     private boolean isBestSeller;
     private boolean isRecommended;
     private String category;
     
-    // New fields for Detail Page
     private String description;
     private String condition;
     private String weight;
@@ -29,7 +29,6 @@ public class Product implements Serializable {
 
     public Product() {}
 
-    // Getters and Setters
     public String getDocumentId() { return documentId; }
     public void setDocumentId(String documentId) { this.documentId = documentId; }
 
@@ -47,6 +46,9 @@ public class Product implements Serializable {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public List<String> getImageUrls() { return imageUrls; }
+    public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
 
     public String getSoldCount() { 
         return soldCount != null ? String.valueOf(soldCount) : ""; 
