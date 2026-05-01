@@ -1,8 +1,13 @@
 package com.example.ezshopapp;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.Window;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -136,7 +141,8 @@ public class CheckoutActivity extends AppCompatActivity {
         }
 
         RadioButton rbSelected = findViewById(selectedId);
-        String paymentMethod = rbSelected.getText().toString();
+        // Extract only the first line of text for the payment method name
+        String paymentMethod = rbSelected.getText().toString().split("\n")[0];
 
         Map<String, Object> order = new HashMap<>();
         order.put("userId", userId);
@@ -151,12 +157,27 @@ public class CheckoutActivity extends AppCompatActivity {
         db.collection("orders")
                 .add(order)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(CheckoutActivity.this, "Order Placed Successfully!", Toast.LENGTH_LONG).show();
-                    clearCartAndFinish();
+                    showSuccessDialog();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(CheckoutActivity.this, "Failed to place order: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void showSuccessDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_order_success);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setCancelable(false);
+
+        Button btnDone = dialog.findViewById(R.id.btnDone);
+        btnDone.setOnClickListener(v -> {
+            dialog.dismiss();
+            clearCartAndFinish();
+        });
+
+        dialog.show();
     }
 
     private void clearCartAndFinish() {
