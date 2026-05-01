@@ -5,14 +5,14 @@
     android:layout_height="match_parent"
     android:background="@color/bg_light">
 
-    <!-- Top Bar (Fixed) -->
+    <!-- Top Bar -->
     <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:paddingHorizontal="20dp"
-        android:background="@color/bg_light"
-        android:elevation="2dp">
+        android:background="@color/white"
+        android:elevation="4dp">
 
         <ImageView
             android:id="@+id/btnBack"
@@ -27,222 +27,203 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:fontFamily="@font/jakarta_bold"
-            android:text="Checkout"
+            android:text="Secure Checkout"
             android:textColor="@color/black"
             android:textSize="18sp" />
     </RelativeLayout>
 
-    <!-- Scrollable Content -->
-    <!-- layout_above ensures this stops before the bottom bar -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/topBar"
         android:layout_above="@id/bottomBarCard"
         android:clipToPadding="false"
-        android:paddingBottom="20dp">
+        android:paddingBottom="24dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
-            <!-- Product List Summary -->
+            <!-- Items Section -->
             <TextView
-                android:id="@+id/labelProductList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:fontFamily="@font/jakarta_bold"
-                android:paddingHorizontal="20dp"
-                android:text="Product List"
+                android:text="Your Items"
                 android:textColor="@color/black"
-                android:textSize="16sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:textSize="16sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/checkoutRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:nestedScrollingEnabled="false"
-                android:paddingHorizontal="20dp"
-                app:layout_constraintTop_toBottomOf="@id/labelProductList" />
+                android:nestedScrollingEnabled="false" />
 
-            <!-- Shipping Section -->
+            <!-- Promo Code Section -->
             <TextView
-                android:id="@+id/labelShipping"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:fontFamily="@font/jakarta_bold"
-                android:paddingHorizontal="20dp"
-                android:text="Shipping"
+                android:text="Promo Code"
                 android:textColor="@color/black"
-                android:textSize="16sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/checkoutRecyclerView" />
+                android:textSize="16sp" />
 
-            <EditText
-                android:id="@+id/etAddress"
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_search_bar"
-                android:fontFamily="@font/inter_regular"
-                android:gravity="top"
-                android:hint="Enter your full address..."
-                android:minHeight="80dp"
-                android:padding="16dp"
-                android:textSize="14sp"
-                app:layout_constraintTop_toBottomOf="@id/labelShipping" />
-
-            <!-- Promo Section -->
-            <TextView
-                android:id="@+id/labelPromo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:fontFamily="@font/jakarta_bold"
-                android:paddingHorizontal="20dp"
-                android:text="Promos"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etAddress" />
-
-            <LinearLayout
-                android:id="@+id/promoContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_search_bar"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp"
-                app:layout_constraintTop_toBottomOf="@id/labelPromo">
+                android:layout_marginTop="12dp">
 
                 <EditText
                     android:id="@+id/etPromoCode"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:fontFamily="@font/inter_medium"
-                    android:hint="Enter Promo Code"
+                    android:background="@drawable/bg_payment_selector"
+                    android:hint="Enter promo code"
+                    android:padding="16dp"
+                    android:paddingEnd="80dp"
                     android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/btnApplyPromo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/inter_bold"
-                    android:padding="8dp"
-                    android:text="Apply"
-                    android:textColor="@color/purple_accent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="16dp"
+                    android:fontFamily="@font/jakarta_bold"
+                    android:text="APPLY"
+                    android:textColor="@color/black"
                     android:textSize="14sp" />
-            </LinearLayout>
+            </RelativeLayout>
 
-            <!-- Payment Method Section -->
+            <!-- Shipping Section -->
             <TextView
-                android:id="@+id/labelPayment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:fontFamily="@font/jakarta_bold"
-                android:paddingHorizontal="20dp"
+                android:text="Shipping Address"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/etAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_payment_selector"
+                android:hint="House #, Street, City..."
+                android:padding="16dp"
+                android:textSize="14sp" />
+
+            <!-- Payment Methods Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:fontFamily="@font/jakarta_bold"
                 android:text="Payment Method"
                 android:textColor="@color/black"
-                android:textSize="16sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/promoContainer" />
+                android:textSize="16sp" />
 
             <RadioGroup
                 android:id="@+id/rgPaymentMethods"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="24dp"
-                app:layout_constraintTop_toBottomOf="@id/labelPayment"
-                app:layout_constraintBottom_toBottomOf="parent">
+                android:layout_marginTop="12dp">
 
                 <RadioButton
                     android:id="@+id/rbJazzCash"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:fontFamily="@font/inter_medium"
-                    android:paddingStart="12dp"
-                    android:text="JazzCash"
+                    android:layout_height="70dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/bg_payment_selector"
+                    android:button="@null"
+                    android:drawableStart="@android:drawable/ic_menu_agenda"
+                    android:drawablePadding="16dp"
+                    android:paddingHorizontal="20dp"
+                    android:text="JazzCash Account\n03XX-XXXXXXX"
+                    android:textColor="@color/black"
                     android:textSize="14sp" />
 
                 <RadioButton
                     android:id="@+id/rbEasyPaisa"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:fontFamily="@font/inter_medium"
-                    android:paddingStart="12dp"
-                    android:text="EasyPaisa"
+                    android:layout_height="70dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/bg_payment_selector"
+                    android:button="@null"
+                    android:drawableStart="@android:drawable/ic_menu_call"
+                    android:drawablePadding="16dp"
+                    android:paddingHorizontal="20dp"
+                    android:text="EasyPaisa Wallet\n03XX-XXXXXXX"
+                    android:textColor="@color/black"
                     android:textSize="14sp" />
 
                 <RadioButton
                     android:id="@+id/rbNayaPay"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:fontFamily="@font/inter_medium"
-                    android:paddingStart="12dp"
-                    android:text="NayaPay"
+                    android:layout_height="70dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/bg_payment_selector"
+                    android:button="@null"
+                    android:drawableStart="@android:drawable/ic_menu_send"
+                    android:drawablePadding="16dp"
+                    android:paddingHorizontal="20dp"
+                    android:text="NayaPay\nLinked: Rs. 15,200.00"
+                    android:textColor="@color/black"
                     android:textSize="14sp" />
 
                 <RadioButton
                     android:id="@+id/rbSadaPay"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:fontFamily="@font/inter_medium"
-                    android:paddingStart="12dp"
-                    android:text="SadaPay"
-                    android:textSize="14sp" />
-
-                <RadioButton
-                    android:id="@+id/rbBankTransfer"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:fontFamily="@font/inter_medium"
-                    android:paddingStart="12dp"
-                    android:text="Direct Bank Transfer"
+                    android:layout_height="70dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/bg_payment_selector"
+                    android:button="@null"
+                    android:drawableStart="@android:drawable/ic_menu_recent_history"
+                    android:drawablePadding="16dp"
+                    android:paddingHorizontal="20dp"
+                    android:text="SadaPay Account\nBalance: Rs. 8,450.00"
+                    android:textColor="@color/black"
                     android:textSize="14sp" />
 
                 <RadioButton
                     android:id="@+id/rbCOD"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
+                    android:layout_height="70dp"
+                    android:background="@drawable/bg_payment_selector"
+                    android:button="@null"
                     android:checked="true"
-                    android:fontFamily="@font/inter_medium"
-                    android:paddingStart="12dp"
-                    android:text="Cash on Delivery (COD)"
+                    android:drawableStart="@android:drawable/ic_menu_mylocation"
+                    android:drawablePadding="16dp"
+                    android:paddingHorizontal="20dp"
+                    android:text="Cash on Delivery\nPay when you receive"
+                    android:textColor="@color/black"
                     android:textSize="14sp" />
+
             </RadioGroup>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Fixed Bottom Bar -->
+    <!-- Bottom Action Bar -->
     <androidx.cardview.widget.CardView
         android:id="@+id/bottomBarCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        app:cardCornerRadius="0dp"
         app:cardElevation="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp"
+            android:padding="24dp"
             android:background="@color/white">
 
             <RelativeLayout
@@ -253,10 +234,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/inter_regular"
-                    android:text="Total Payment"
+                    android:text="Total Amount"
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp" />
+                    android:fontFamily="@font/jakarta_medium" />
 
                 <TextView
                     android:id="@+id/tvFinalTotal"
@@ -266,17 +246,17 @@
                     android:fontFamily="@font/jakarta_bold"
                     android:text="$ 0.00"
                     android:textColor="@color/black"
-                    android:textSize="18sp" />
+                    android:textSize="20sp" />
             </RelativeLayout>
 
             <Button
                 android:id="@+id/btnOrderNow"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="56dp"
                 android:backgroundTint="@color/black"
                 android:fontFamily="@font/jakarta_bold"
-                android:text="Order Now"
-                android:textAllCaps="false"
+                android:text="CONFIRM AND PAY"
+                android:textSize="16sp"
                 app:cornerRadius="12dp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
