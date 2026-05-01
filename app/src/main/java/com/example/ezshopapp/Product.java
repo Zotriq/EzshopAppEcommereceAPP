@@ -18,7 +18,7 @@ public class Product implements Serializable {
     private boolean isBestSeller;
     private boolean isRecommended;
     private String category;
-    
+
     private String description;
     private String condition;
     private String weight;
@@ -50,8 +50,8 @@ public class Product implements Serializable {
     public List<String> getImageUrls() { return imageUrls; }
     public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
 
-    public String getSoldCount() { 
-        return soldCount != null ? String.valueOf(soldCount) : ""; 
+    public String getSoldCount() {
+        return soldCount != null ? String.valueOf(soldCount) : "";
     }
     public void setSoldCount(Object soldCount) { this.soldCount = soldCount; }
 

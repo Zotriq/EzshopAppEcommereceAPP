@@ -41,7 +41,7 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void onCategoryClick(String category);
     }
 
-    public MainHomeAdapter(List<Product> bestSellers, List<Product> recommendations, List<String> categories, 
+    public MainHomeAdapter(List<Product> bestSellers, List<Product> recommendations, List<String> categories,
                            List<Banner> banners, OnSearchListener searchListener, OnCategoryClickListener categoryClickListener) {
         this.bestSellers = bestSellers;
         this.recommendations = recommendations;
@@ -65,7 +65,7 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         if (viewType == TYPE_HEADER) {
-            return new HeaderViewHolder(inflater.inflate(R.layout.item_home_header, parent, false), 
+            return new HeaderViewHolder(inflater.inflate(R.layout.item_home_header, parent, false),
                     categories, searchListener, categoryClickListener);
         } else if (viewType == TYPE_BANNER_LIST) {
             return new BannersListViewHolder(inflater.inflate(R.layout.item_banners_list, parent, false));
@@ -104,7 +104,7 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         ImageView clearSearch;
         RecyclerView categoryRecyclerView;
 
-        public HeaderViewHolder(@NonNull View itemView, List<String> categories, 
+        public HeaderViewHolder(@NonNull View itemView, List<String> categories,
                                 OnSearchListener searchListener, OnCategoryClickListener categoryListener) {
             super(itemView);
             searchEditText = itemView.findViewById(R.id.searchEditText);
@@ -173,7 +173,7 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void bind(List<Product> products) {
             ProductAdapter adapter = new ProductAdapter(products);
             innerRecycler.setAdapter(adapter);
-            
+
             if (seeAll != null) {
                 seeAll.setOnClickListener(v -> {
                     Intent intent = new Intent(itemView.getContext(), SeeAllActivity.class);

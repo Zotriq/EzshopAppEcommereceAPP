@@ -37,7 +37,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_product_detail);
 
         db = FirebaseFirestore.getInstance();
-        
+
         // 1. Get Product from Intent
         product = (Product) getIntent().getSerializableExtra("product");
 
@@ -96,7 +96,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
 
         btnBack.setOnClickListener(v -> finish());
-        
+
         // Expandable Description Logic
         btnMoreInfo.setOnClickListener(v -> {
             if (isDescriptionExpanded) {
@@ -132,7 +132,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         RecyclerView colorRecycler = findViewById(R.id.colorRecyclerView);
         List<String> colors = product.getColors();
         if (colors == null) colors = new ArrayList<>();
-        
+
         ColorAdapter adapter = new ColorAdapter(colors, (hex, position) -> {
             // Sync with Image Slider: When a color is clicked, show the corresponding image
             if (product.getImageUrls() != null && position < product.getImageUrls().size()) {

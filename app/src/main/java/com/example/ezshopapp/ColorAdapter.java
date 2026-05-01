@@ -37,9 +37,9 @@ public class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ColorViewHol
     @Override
     public void onBindViewHolder(@NonNull ColorViewHolder holder, int position) {
         String hexColor = colorHexList.get(position);
-        
+
         GradientDrawable background = (GradientDrawable) holder.colorCircle.getBackground();
-        
+
         if (hexColor != null && !hexColor.isEmpty()) {
             background.setColor(Color.parseColor(hexColor));
         }

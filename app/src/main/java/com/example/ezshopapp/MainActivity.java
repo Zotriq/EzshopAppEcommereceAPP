@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView mainRecyclerView;
     private List<Product> bestSellersList, recommendationsList;
-    private List<Product> allProducts; 
+    private List<Product> allProducts;
     private List<String> categories;
     private List<Banner> bannerList;
     private MainHomeAdapter mainHomeAdapter;
@@ -33,18 +33,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+
         init();
     }
 
     private void init() {
         db = FirebaseFirestore.getInstance();
-        
+
         allProducts = new ArrayList<>();
         bestSellersList = new ArrayList<>();
         recommendationsList = new ArrayList<>();
         bannerList = new ArrayList<>();
-        
+
         categories = Arrays.asList("All", "Laptop", "Smartphone", "Monitor", "Mouse", "Keyboard", "Headset");
 
         setupRecyclerView();
@@ -57,11 +57,11 @@ public class MainActivity extends AppCompatActivity {
         mainRecyclerView = findViewById(R.id.mainRecyclerView);
 
         mainHomeAdapter = new MainHomeAdapter(
-                bestSellersList, 
-                recommendationsList, 
-                categories, 
+                bestSellersList,
+                recommendationsList,
+                categories,
                 bannerList,
-                this::onSearch, 
+                this::onSearch,
                 this::onCategoryClick
         );
 
@@ -103,11 +103,11 @@ public class MainActivity extends AppCompatActivity {
         String lowerCaseQuery = currentSearchQuery.toLowerCase().trim();
 
         for (Product product : allProducts) {
-            boolean matchesCategory = currentCategory.equals("All") || 
-                                     (product.getCategory() != null && product.getCategory().equalsIgnoreCase(currentCategory));
-            
-            boolean matchesSearch = lowerCaseQuery.isEmpty() || 
-                                    product.getName().toLowerCase().contains(lowerCaseQuery);
+            boolean matchesCategory = currentCategory.equals("All") ||
+                    (product.getCategory() != null && product.getCategory().equalsIgnoreCase(currentCategory));
+
+            boolean matchesSearch = lowerCaseQuery.isEmpty() ||
+                    product.getName().toLowerCase().contains(lowerCaseQuery);
 
             if (matchesCategory && matchesSearch) {
                 if (product.isBestSeller()) {

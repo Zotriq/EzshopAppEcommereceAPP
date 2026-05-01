@@ -86,7 +86,7 @@ public class RegisterActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     progressBar.setVisibility(View.GONE);
                     registerButton.setVisibility(View.VISIBLE);
-                    
+
                     if (task.isSuccessful()) {
                         Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
                         // You can save the 'name' to Firebase Database/Firestore here if needed later
