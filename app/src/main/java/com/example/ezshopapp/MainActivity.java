@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String currentCategory = "All";
     private String currentSearchQuery = "";
+    private BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +36,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         
         init();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Whenever we come back to MainActivity, ensure "Home" is the highlighted tab
+        if (bottomNav != null) {
+            bottomNav.setSelectedItemId(R.id.nav_home);
+        }
     }
 
     private void init() {
@@ -79,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
                             Banner banner = document.toObject(Banner.class);
                             bannerList.add(banner);
                         }
-                        mainHomeAdapter.notifyItemChanged(1); // Position of banner list in main recycler
+                        mainHomeAdapter.notifyItemChanged(1);
                     } else {
                         Toast.makeText(this, "Error getting banners: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
@@ -140,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBottomNav() {
-        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
+        bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_profile) {
