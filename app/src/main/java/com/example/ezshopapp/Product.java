@@ -8,9 +8,10 @@ public class Product {
     private float rating;
     private String location;
     private String imageUrl;
-    private Object soldCount; // Changed to Object to prevent type-mismatch crashes
+    private Object soldCount;
     private boolean isBestSeller;
     private boolean isRecommended;
+    private String category; // New field for category filtering
 
     public Product() {}
 
@@ -45,4 +46,7 @@ public class Product {
 
     @PropertyName("isRecommended")
     public void setRecommended(boolean recommended) { isRecommended = recommended; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 }
