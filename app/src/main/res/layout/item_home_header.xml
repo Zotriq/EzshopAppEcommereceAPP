@@ -58,13 +58,24 @@
             app:tint="@color/text_secondary" />
 
         <EditText
-            android:layout_width="match_parent"
+            android:id="@+id/searchEditText"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:layout_marginStart="12dp"
             android:background="@android:color/transparent"
             android:fontFamily="@font/inter_regular"
-            android:hint="Search product, store, or brand"
+            android:hint="Search product..."
+            android:imeOptions="actionSearch"
+            android:inputType="text"
             android:textSize="14sp" />
+
+        <ImageView
+            android:id="@+id/clearSearch"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@color/text_secondary" />
     </LinearLayout>
 
     <!-- Balance Card -->
@@ -115,38 +126,14 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Categories -->
-    <LinearLayout
+    <!-- Categories Section -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/categoryRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_product_image_grey"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="8dp"
-            android:text="Laptop"
-            android:fontFamily="@font/inter_medium"
-            android:layout_marginEnd="8dp"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_product_image_grey"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="8dp"
-            android:text="Smartphone"
-            android:fontFamily="@font/inter_medium"
-            android:layout_marginEnd="8dp"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_product_image_grey"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="8dp"
-            android:text="Monitor"
-            android:fontFamily="@font/inter_medium"/>
-    </LinearLayout>
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
 </LinearLayout>
