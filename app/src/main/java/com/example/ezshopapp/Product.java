@@ -11,7 +11,7 @@ public class Product {
     private Object soldCount;
     private boolean isBestSeller;
     private boolean isRecommended;
-    private String category; // New field for category filtering
+    private String category;
 
     public Product() {}
 
