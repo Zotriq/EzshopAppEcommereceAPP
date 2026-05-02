@@ -36,6 +36,9 @@ public class ProductDetailActivity extends AppCompatActivity {
     private boolean isDescriptionExpanded = false;
     private ViewPager2 productViewPager;
     private String selectedColor;
+    private ImageView btnWishlist;
+    private boolean isInWishlist = false;
+    private String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +46,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_product_detail);
 
         db = FirebaseFirestore.getInstance();
+        userId = FirebaseAuth.getInstance().getUid();
 
-        // 1. Get Product from Intent
         product = (Product) getIntent().getSerializableExtra("product");
 
         if (product == null) {
@@ -53,20 +56,12 @@ public class ProductDetailActivity extends AppCompatActivity {
             return;
         }
 
-        // 2. Initialize UI Components
         initUI();
-
-        // 3. Setup Image Slider
         setupImageSlider();
-
-        // 4. Setup Colors
         setupColorList();
-
-        // 5. Setup Reviews
         setupReviewList();
-
-        // 6. Save to Last Seen
         saveToLastSeen();
+        checkWishlistStatus();
     }
 
     private void initUI() {
@@ -86,12 +81,11 @@ public class ProductDetailActivity extends AppCompatActivity {
         TextView storeLocation = findViewById(R.id.storeLocation);
         ImageView storeImage = findViewById(R.id.storeImage);
         Button btnAddToCart = findViewById(R.id.btnAddToCart);
+        btnWishlist = findViewById(R.id.btnWishlist);
 
-        // Bind Data
         name.setText(product.getName());
         price.setText("$ " + product.getPrice());
         rating.setText(String.valueOf(product.getRating()));
-        // Use formatted string
         soldCountText.setText("|  Sold " + product.getFormattedSoldCount());
         
         condition.setText(": " + (product.getCondition() != null ? product.getCondition() : "New"));
@@ -108,7 +102,6 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        // Expandable Description Logic
         btnMoreInfo.setOnClickListener(v -> {
             if (isDescriptionExpanded) {
                 description.setMaxLines(3);
@@ -121,20 +114,65 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         btnAddToCart.setOnClickListener(v -> addToCart());
+        
+        btnWishlist.setOnClickListener(v -> toggleWishlist());
+    }
+
+    private void checkWishlistStatus() {
+        if (userId == null) return;
+
+        db.collection("wishlist")
+                .document(userId + "_" + product.getDocumentId())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        isInWishlist = true;
+                        btnWishlist.setImageResource(android.R.drawable.btn_star_big_on);
+                    } else {
+                        isInWishlist = false;
+                        btnWishlist.setImageResource(android.R.drawable.btn_star_big_off);
+                    }
+                });
+    }
+
+    private void toggleWishlist() {
+        if (userId == null) {
+            Toast.makeText(this, "Please login to use Wishlist", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        DocumentReference docRef = db.collection("wishlist").document(userId + "_" + product.getDocumentId());
+
+        if (isInWishlist) {
+            docRef.delete().addOnSuccessListener(aVoid -> {
+                isInWishlist = false;
+                btnWishlist.setImageResource(android.R.drawable.btn_star_big_off);
+                Toast.makeText(this, "Removed from Wishlist", Toast.LENGTH_SHORT).show();
+            });
+        } else {
+            Map<String, Object> wishlistItem = new HashMap<>();
+            wishlistItem.put("userId", userId);
+            wishlistItem.put("productId", product.getDocumentId());
+            wishlistItem.put("name", product.getName());
+            wishlistItem.put("price", product.getPrice());
+            wishlistItem.put("imageUrl", product.getImageUrl());
+            wishlistItem.put("rating", product.getRating());
+            wishlistItem.put("soldCount", product.getSoldCount());
+            wishlistItem.put("location", product.getLocation());
+
+            docRef.set(wishlistItem).addOnSuccessListener(aVoid -> {
+                isInWishlist = true;
+                btnWishlist.setImageResource(android.R.drawable.btn_star_big_on);
+                Toast.makeText(this, "Added to Wishlist", Toast.LENGTH_SHORT).show();
+            });
+        }
     }
 
     private void saveToLastSeen() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            return;
-        }
-        
-        if (product.getDocumentId() == null) {
-            return;
-        }
+        if (userId == null || product.getDocumentId() == null) return;
 
         Map<String, Object> lastSeenData = new HashMap<>();
-        lastSeenData.put("userId", user.getUid());
+        lastSeenData.put("userId", userId);
         lastSeenData.put("productId", product.getDocumentId());
         lastSeenData.put("timestamp", FieldValue.serverTimestamp());
         lastSeenData.put("name", product.getName());
@@ -145,13 +183,12 @@ public class ProductDetailActivity extends AppCompatActivity {
         lastSeenData.put("location", product.getLocation());
 
         db.collection("last_seen")
-                .document(user.getUid() + "_" + product.getDocumentId())
+                .document(userId + "_" + product.getDocumentId())
                 .set(lastSeenData);
     }
 
     private void addToCart() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
+        if (userId == null) {
             Toast.makeText(this, "Please login to add items to cart", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -160,12 +197,9 @@ public class ProductDetailActivity extends AppCompatActivity {
             selectedColor = product.getColors().get(0);
         }
 
-        String userId = user.getUid();
-        String productId = product.getDocumentId();
-
         db.collection("cart")
                 .whereEqualTo("userId", userId)
-                .whereEqualTo("productId", productId)
+                .whereEqualTo("productId", product.getDocumentId())
                 .whereEqualTo("selectedColor", selectedColor)
                 .get()
                 .addOnCompleteListener(task -> {
@@ -177,7 +211,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                         } else {
                             CartItem cartItem = new CartItem(
                                     userId,
-                                    productId,
+                                    product.getDocumentId(),
                                     product.getName(),
                                     product.getPrice(),
                                     product.getImageUrl(),
