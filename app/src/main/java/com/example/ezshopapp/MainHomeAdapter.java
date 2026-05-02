@@ -28,7 +28,7 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private final List<Product> bestSellers;
     private final List<Product> recommendations;
-    private final List<String> categories;
+    private final List<Category> categories;
     private final List<Banner> banners;
     private final OnSearchListener searchListener;
     private final OnCategoryClickListener categoryClickListener;
@@ -41,8 +41,9 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void onCategoryClick(String category);
     }
 
-    public MainHomeAdapter(List<Product> bestSellers, List<Product> recommendations, List<String> categories, 
-                           List<Banner> banners, OnSearchListener searchListener, OnCategoryClickListener categoryClickListener) {
+    public MainHomeAdapter(List<Product> bestSellers, List<Product> recommendations, 
+                           List<Category> categories, List<Banner> banners, OnSearchListener searchListener, 
+                           OnCategoryClickListener categoryClickListener) {
         this.bestSellers = bestSellers;
         this.recommendations = recommendations;
         this.categories = categories;
@@ -66,13 +67,13 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         if (viewType == TYPE_HEADER) {
             return new HeaderViewHolder(inflater.inflate(R.layout.item_home_header, parent, false), 
-                    categories, searchListener, categoryClickListener);
+                    searchListener, categoryClickListener);
         } else if (viewType == TYPE_BANNER_LIST) {
             return new BannersListViewHolder(inflater.inflate(R.layout.item_banners_list, parent, false));
         } else if (viewType == TYPE_BEST_SELLERS) {
             return new BestSellersViewHolder(inflater.inflate(R.layout.item_best_sellers_list, parent, false));
         } else if (viewType == TYPE_RECOMMENDATION_TITLE) {
-            return new TitleViewHolder(inflater.inflate(R.layout.item_section_title, parent, false));
+            return new TitleViewHolder(inflater.inflate(R.layout.item_section_title, parent, false), "Recommendation");
         } else {
             return new RecommendationViewHolder(inflater.inflate(R.layout.item_recommendation, parent, false));
         }
@@ -80,33 +81,42 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (holder instanceof BannersListViewHolder) {
+        if (holder instanceof HeaderViewHolder) {
+            ((HeaderViewHolder) holder).bind(categories);
+        } else if (holder instanceof BannersListViewHolder) {
             ((BannersListViewHolder) holder).bind(banners);
         } else if (holder instanceof BestSellersViewHolder) {
             ((BestSellersViewHolder) holder).bind(bestSellers);
-        } else if (holder instanceof RecommendationViewHolder) {
-            int recPosition = position - 4;
-            if (recPosition >= 0 && recPosition < recommendations.size()) {
-                ((RecommendationViewHolder) holder).bind(recommendations.get(recPosition));
-            }
         } else if (holder instanceof TitleViewHolder) {
             ((TitleViewHolder) holder).bind();
+        } else if (holder instanceof RecommendationViewHolder) {
+            int recPosition = position - 4;
+            if (recPosition >= 0 && recommendations != null && recPosition < recommendations.size()) {
+                ((RecommendationViewHolder) holder).bind(recommendations.get(recPosition));
+            }
         }
     }
 
     @Override
     public int getItemCount() {
-        return 4 + recommendations.size();
+        int count = 4;
+        if (recommendations != null) {
+            count += recommendations.size();
+        }
+        return count;
     }
 
     static class HeaderViewHolder extends RecyclerView.ViewHolder {
         EditText searchEditText;
         ImageView clearSearch;
         RecyclerView categoryRecyclerView;
+        OnSearchListener searchListener;
+        OnCategoryClickListener categoryListener;
 
-        public HeaderViewHolder(@NonNull View itemView, List<String> categories, 
-                                OnSearchListener searchListener, OnCategoryClickListener categoryListener) {
+        public HeaderViewHolder(@NonNull View itemView, OnSearchListener searchListener, OnCategoryClickListener categoryListener) {
             super(itemView);
+            this.searchListener = searchListener;
+            this.categoryListener = categoryListener;
             searchEditText = itemView.findViewById(R.id.searchEditText);
             clearSearch = itemView.findViewById(R.id.clearSearch);
             categoryRecyclerView = itemView.findViewById(R.id.categoryRecyclerView);
@@ -117,8 +127,8 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if (searchListener != null) {
-                        searchListener.onSearch(s.toString());
+                    if (HeaderViewHolder.this.searchListener != null) {
+                        HeaderViewHolder.this.searchListener.onSearch(s.toString());
                     }
                 }
 
@@ -129,15 +139,21 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             if (clearSearch != null) {
                 clearSearch.setOnClickListener(v -> {
                     searchEditText.setText("");
-                    if (searchListener != null) {
-                        searchListener.onSearch("");
-                    }
                 });
             }
-
+            
             if (categoryRecyclerView != null) {
                 categoryRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext(), LinearLayoutManager.HORIZONTAL, false));
-                CategoryAdapter adapter = new CategoryAdapter(categories, categoryListener::onCategoryClick);
+            }
+        }
+
+        void bind(List<Category> categories) {
+            if (categoryRecyclerView != null && categories != null) {
+                CategoryAdapter adapter = new CategoryAdapter(categories, category -> {
+                    if (categoryListener != null && category != null) {
+                        categoryListener.onCategoryClick(category.getName());
+                    }
+                });
                 categoryRecyclerView.setAdapter(adapter);
             }
         }
@@ -152,7 +168,7 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
 
         void bind(List<Banner> banners) {
-            if (bannerRecyclerView != null) {
+            if (bannerRecyclerView != null && banners != null) {
                 bannerRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext(), LinearLayoutManager.HORIZONTAL, false));
                 BannerAdapter adapter = new BannerAdapter(banners);
                 bannerRecyclerView.setAdapter(adapter);
@@ -171,8 +187,10 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
 
         void bind(List<Product> products) {
-            ProductAdapter adapter = new ProductAdapter(products);
-            innerRecycler.setAdapter(adapter);
+            if (innerRecycler != null && products != null) {
+                ProductAdapter adapter = new ProductAdapter(products);
+                innerRecycler.setAdapter(adapter);
+            }
 
             if (seeAll != null) {
                 seeAll.setOnClickListener(v -> {
@@ -187,20 +205,22 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     static class TitleViewHolder extends RecyclerView.ViewHolder {
         TextView title, seeAll;
+        String titleText;
 
-        public TitleViewHolder(@NonNull View itemView) {
+        public TitleViewHolder(@NonNull View itemView, String titleText) {
             super(itemView);
+            this.titleText = titleText;
             title = itemView.findViewById(R.id.sectionTitle);
             seeAll = itemView.findViewById(R.id.seeAllRecommended);
         }
 
         void bind() {
-            if (title != null) title.setText("Recommendation");
+            if (title != null) title.setText(titleText);
             if (seeAll != null) {
                 seeAll.setOnClickListener(v -> {
                     Intent intent = new Intent(itemView.getContext(), SeeAllActivity.class);
                     intent.putExtra("category", "recommended");
-                    intent.putExtra("title", "Recommended");
+                    intent.putExtra("title", titleText);
                     itemView.getContext().startActivity(intent);
                 });
             }
@@ -222,14 +242,14 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
 
         void bind(Product product) {
+            if (product == null) return;
             name.setText(product.getName());
             price.setText("$ " + product.getPrice());
             rating.setText(String.valueOf(product.getRating()));
-            soldCount.setText(product.getSoldCount());
+            soldCount.setText(String.valueOf(product.getFormattedSoldCount()));
             location.setText(product.getLocation());
             Glide.with(itemView.getContext()).load(product.getImageUrl()).into(image);
 
-            // Navigate to ProductDetailActivity on click
             itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(itemView.getContext(), ProductDetailActivity.class);
                 intent.putExtra("product", product);

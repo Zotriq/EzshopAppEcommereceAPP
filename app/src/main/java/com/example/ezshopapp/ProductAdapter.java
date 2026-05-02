@@ -36,7 +36,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.price.setText("$ " + product.getPrice());
         holder.location.setText(product.getLocation());
         holder.rating.setText(String.valueOf(product.getRating()));
-        holder.soldCount.setText("| " + product.getSoldCount());
+        holder.soldCount.setText("| " + product.getFormattedSoldCount());
 
         // Load image using Glide
         Glide.with(holder.itemView.getContext())
