@@ -12,6 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EzshopApp">
         <activity
+            android:name=".OrderHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".WishlistActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".ExploreActivity"
             android:exported="false" />
         <activity
