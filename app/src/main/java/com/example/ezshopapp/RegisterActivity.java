@@ -12,6 +12,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -20,6 +26,7 @@ public class RegisterActivity extends AppCompatActivity {
     private TextView goToLogin;
     private ProgressBar progressBar;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +34,7 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         nameRegister = findViewById(R.id.nameRegister);
         emailRegister = findViewById(R.id.emailRegister);
@@ -45,7 +53,7 @@ public class RegisterActivity extends AppCompatActivity {
         goToLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish(); // Returns to LoginActivity
+                finish();
             }
         });
     }
@@ -84,18 +92,47 @@ public class RegisterActivity extends AppCompatActivity {
 
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
-                    progressBar.setVisibility(View.GONE);
-                    registerButton.setVisibility(View.VISIBLE);
-
                     if (task.isSuccessful()) {
-                        Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
-                        // You can save the 'name' to Firebase Database/Firestore here if needed later
-                        startActivity(new Intent(RegisterActivity.this, MainActivity.class));
-                        finishAffinity();
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            // 1. Update Auth Profile Name
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(name)
+                                    .build();
+
+                            user.updateProfile(profileUpdates)
+                                    .addOnCompleteListener(profileTask -> {
+                                        // 2. Save to Firestore regardless of profile update success
+                                        saveUserToFirestore(user.getUid(), name, email);
+                                    });
+                        }
                     } else {
+                        progressBar.setVisibility(View.GONE);
+                        registerButton.setVisibility(View.VISIBLE);
                         Toast.makeText(RegisterActivity.this, "Registration failed: " + task.getException().getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
+                });
+    }
+
+    private void saveUserToFirestore(String uid, String name, String email) {
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("name", name);
+        userMap.put("email", email);
+        userMap.put("balance", 0.0);
+
+        db.collection("users").document(uid)
+                .set(userMap)
+                .addOnSuccessListener(aVoid -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(RegisterActivity.this, MainActivity.class));
+                    finishAffinity();
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    registerButton.setVisibility(View.VISIBLE);
+                    Toast.makeText(RegisterActivity.this, "Error saving user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 }
