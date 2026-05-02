@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView mainRecyclerView;
     private List<Product> bestSellersList, recommendationsList;
     private List<Product> allProducts; 
-    private List<String> categories;
+    private List<Category> categories;
     private List<Banner> bannerList;
     private MainHomeAdapter mainHomeAdapter;
     private FirebaseFirestore db;
@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Whenever we come back to MainActivity, ensure "Home" is the highlighted tab
         if (bottomNav != null) {
             bottomNav.setSelectedItemId(R.id.nav_home);
         }
@@ -55,7 +54,14 @@ public class MainActivity extends AppCompatActivity {
         recommendationsList = new ArrayList<>();
         bannerList = new ArrayList<>();
         
-        categories = Arrays.asList("All", "Laptop", "Smartphone", "Monitor", "Mouse", "Keyboard", "Headset");
+        categories = new ArrayList<>();
+        categories.add(new Category("All", R.drawable.home));
+        categories.add(new Category("Laptop", R.drawable.home));
+        categories.add(new Category("Smartphone", android.R.drawable.ic_menu_call));
+        categories.add(new Category("Monitor", android.R.drawable.ic_menu_gallery));
+        categories.add(new Category("Mouse", android.R.drawable.ic_menu_manage));
+        categories.add(new Category("Keyboard", android.R.drawable.ic_menu_edit));
+        categories.add(new Category("Headset", android.R.drawable.ic_menu_view));
 
         setupRecyclerView();
         fetchBanners();
@@ -153,13 +159,15 @@ public class MainActivity extends AppCompatActivity {
         bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_profile) {
-                FirebaseAuth.getInstance().signOut();
-                startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                finish();
+            if (id == R.id.nav_home) {
+                return true;
+            } else if (id == R.id.nav_list) {
+                startActivity(new Intent(MainActivity.this, ExploreActivity.class));
                 return true;
             } else if (id == R.id.nav_cart) {
                 startActivity(new Intent(MainActivity.this, CartActivity.class));
+                return true;
+            } else if (id == R.id.nav_profile) {
                 return true;
             }
             return true;
