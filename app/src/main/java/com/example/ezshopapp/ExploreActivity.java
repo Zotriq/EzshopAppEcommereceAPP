@@ -242,10 +242,16 @@ public class ExploreActivity extends AppCompatActivity {
             if (id == R.id.nav_home) {
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
+                return true;
             } else if (id == R.id.nav_cart) {
                 startActivity(new Intent(this, CartActivity.class));
+                return true;
+            } else if (id == R.id.nav_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
+                finish();
+                return true;
             }
-            return true;
+            return false;
         });
     }
 }
