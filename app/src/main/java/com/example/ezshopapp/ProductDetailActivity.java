@@ -75,7 +75,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         TextView name = findViewById(R.id.productDetailName);
         TextView price = findViewById(R.id.productDetailPrice);
         TextView rating = findViewById(R.id.productDetailRating);
-        TextView soldCount = findViewById(R.id.productDetailSoldCount);
+        TextView soldCountText = findViewById(R.id.productDetailSoldCount);
         TextView condition = findViewById(R.id.specCondition);
         TextView weight = findViewById(R.id.specWeight);
         TextView category = findViewById(R.id.specCategory);
@@ -91,7 +91,9 @@ public class ProductDetailActivity extends AppCompatActivity {
         name.setText(product.getName());
         price.setText("$ " + product.getPrice());
         rating.setText(String.valueOf(product.getRating()));
-        soldCount.setText("|  Sold " + product.getSoldCount());
+        // Use formatted string
+        soldCountText.setText("|  Sold " + product.getFormattedSoldCount());
+        
         condition.setText(": " + (product.getCondition() != null ? product.getCondition() : "New"));
         weight.setText(": " + (product.getWeight() != null ? product.getWeight() : "500 Gram"));
         category.setText(": " + product.getCategory());
@@ -124,16 +126,12 @@ public class ProductDetailActivity extends AppCompatActivity {
     private void saveToLastSeen() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
-            Log.d(TAG, "saveToLastSeen: User not logged in");
             return;
         }
         
         if (product.getDocumentId() == null) {
-            Log.d(TAG, "saveToLastSeen: Product ID is null");
             return;
         }
-
-        Log.d(TAG, "saveToLastSeen: Saving product " + product.getName());
 
         Map<String, Object> lastSeenData = new HashMap<>();
         lastSeenData.put("userId", user.getUid());
@@ -148,9 +146,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         db.collection("last_seen")
                 .document(user.getUid() + "_" + product.getDocumentId())
-                .set(lastSeenData)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "saveToLastSeen: Success"))
-                .addOnFailureListener(e -> Log.e(TAG, "saveToLastSeen: Failed", e));
+                .set(lastSeenData);
     }
 
     private void addToCart() {
@@ -175,14 +171,10 @@ public class ProductDetailActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         if (!task.getResult().isEmpty()) {
-                            // Item already in cart, increment quantity
                             String docId = task.getResult().getDocuments().get(0).getId();
                             db.collection("cart").document(docId)
-                                    .update("quantity", FieldValue.increment(1))
-                                    .addOnSuccessListener(aVoid -> Toast.makeText(ProductDetailActivity.this, "Quantity updated in cart!", Toast.LENGTH_SHORT).show())
-                                    .addOnFailureListener(e -> Toast.makeText(ProductDetailActivity.this, "Failed to update cart", Toast.LENGTH_SHORT).show());
+                                    .update("quantity", FieldValue.increment(1));
                         } else {
-                            // Item not in cart, add new
                             CartItem cartItem = new CartItem(
                                     userId,
                                     productId,
@@ -192,13 +184,9 @@ public class ProductDetailActivity extends AppCompatActivity {
                                     selectedColor,
                                     1
                             );
-                            db.collection("cart")
-                                    .add(cartItem)
-                                    .addOnSuccessListener(documentReference -> Toast.makeText(ProductDetailActivity.this, "Added to cart!", Toast.LENGTH_SHORT).show())
-                                    .addOnFailureListener(e -> Toast.makeText(ProductDetailActivity.this, "Failed to add to cart", Toast.LENGTH_SHORT).show());
+                            db.collection("cart").add(cartItem);
                         }
-                    } else {
-                        Log.e(TAG, "Error checking cart", task.getException());
+                        Toast.makeText(ProductDetailActivity.this, "Item added to cart", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
