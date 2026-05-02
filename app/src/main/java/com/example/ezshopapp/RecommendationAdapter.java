@@ -35,7 +35,8 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         holder.name.setText(product.getName());
         holder.price.setText("$ " + product.getPrice());
         holder.rating.setText(String.valueOf(product.getRating()));
-        holder.soldCount.setText("Sold " + product.getSoldCount());
+        // Use formatted string (e.g., 1k+) to prevent crashes and look better
+        holder.soldCount.setText("Sold " + product.getFormattedSoldCount());
         holder.location.setText(product.getLocation());
 
         Glide.with(holder.itemView.getContext())
@@ -52,7 +53,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
 
     @Override
     public int getItemCount() {
-        return productList.size();
+        return productList != null ? productList.size() : 0;
     }
 
     public static class RecommendationViewHolder extends RecyclerView.ViewHolder {
