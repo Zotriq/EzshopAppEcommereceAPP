@@ -14,7 +14,7 @@ public class Product implements Serializable {
     private String imageUrl;
     private List<String> imageUrls;
     private List<String> colors;
-    private Object soldCount;
+    private int soldCount;
     private boolean isBestSeller;
     private boolean isRecommended;
     private String category;
@@ -52,10 +52,36 @@ public class Product implements Serializable {
     public List<String> getColors() { return colors; }
     public void setColors(List<String> colors) { this.colors = colors; }
 
-    public String getSoldCount() { 
-        return soldCount != null ? String.valueOf(soldCount) : ""; 
+    public int getSoldCount() { 
+        return soldCount; 
     }
-    public void setSoldCount(Object soldCount) { this.soldCount = soldCount; }
+
+    // Accept Object to prevent crashes during Firebase data migration
+    public void setSoldCount(Object soldCount) {
+        if (soldCount instanceof Number) {
+            this.soldCount = ((Number) soldCount).intValue();
+        } else if (soldCount instanceof String) {
+            try {
+                // Remove non-numeric characters (like 'k', '+', '.') then parse
+                String s = ((String) soldCount).replaceAll("[^0-9]", "");
+                if (!s.isEmpty()) {
+                    this.soldCount = Integer.parseInt(s);
+                    // If it was "1k", parsing "1" is wrong, but this prevents the crash
+                    if (((String) soldCount).contains("k")) this.soldCount *= 1000;
+                }
+            } catch (Exception e) {
+                this.soldCount = 0;
+            }
+        }
+    }
+
+    @Exclude
+    public String getFormattedSoldCount() {
+        if (soldCount >= 1000) {
+            return (soldCount / 1000) + "k+";
+        }
+        return String.valueOf(soldCount);
+    }
 
     @PropertyName("isBestSeller")
     public boolean isBestSeller() { return isBestSeller; }
