@@ -1,9 +1,9 @@
 package com.example.ezshopapp;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -11,65 +11,53 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
+public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHolder> {
 
-    private final List<String> categories;
-    private final OnCategoryClickListener listener;
-    private int selectedPosition = 0;
+    private List<Category> categoryList;
+    private OnItemClickListener listener;
 
-    public interface OnCategoryClickListener {
-        void onCategoryClick(String category);
+    public interface OnItemClickListener {
+        void onItemClick(Category category);
     }
 
-    public CategoryAdapter(List<String> categories, OnCategoryClickListener listener) {
-        this.categories = categories;
+    public CategoryAdapter(List<Category> categoryList, OnItemClickListener listener) {
+        this.categoryList = categoryList;
         this.listener = listener;
     }
 
     @NonNull
     @Override
-    public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_category, parent, false);
-        return new CategoryViewHolder(view);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
-        String category = categories.get(position);
-        holder.categoryName.setText(category);
-
-        if (selectedPosition == position) {
-            holder.categoryName.setBackgroundResource(R.drawable.bg_category_selected);
-            holder.categoryName.setTextColor(Color.WHITE);
-        } else {
-            holder.categoryName.setBackgroundResource(R.drawable.bg_category);
-            holder.categoryName.setTextColor(Color.BLACK);
-        }
-
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Category category = categoryList.get(position);
+        holder.tvCategoryName.setText(category.getName());
+        holder.ivCategoryIcon.setImageResource(category.getIconResId());
+        
         holder.itemView.setOnClickListener(v -> {
-            int previousSelected = selectedPosition;
-            selectedPosition = holder.getAdapterPosition();
-            if (selectedPosition != RecyclerView.NO_POSITION) {
-                notifyItemChanged(previousSelected);
-                notifyItemChanged(selectedPosition);
-                if (listener != null) {
-                    listener.onCategoryClick(category);
-                }
+            if (listener != null) {
+                listener.onItemClick(category);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return categories.size();
+        return categoryList.size();
     }
 
-    public static class CategoryViewHolder extends RecyclerView.ViewHolder {
-        TextView categoryName;
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView ivCategoryIcon;
+        TextView tvCategoryName;
 
-        public CategoryViewHolder(@NonNull View itemView) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            categoryName = itemView.findViewById(R.id.categoryName);
+            ivCategoryIcon = itemView.findViewById(R.id.ivCategoryIcon);
+            tvCategoryName = itemView.findViewById(R.id.tvCategoryName);
         }
     }
 }
