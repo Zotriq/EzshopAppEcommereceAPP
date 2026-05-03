@@ -3,6 +3,7 @@ package com.example.ezshopapp;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,7 +21,8 @@ public class AdminAddEditProductActivity extends AppCompatActivity {
 
     private EditText etProductName, etProductPrice, etProductCategory, etProductDescription;
     private EditText etProductImageUrl1, etProductImageUrl2, etProductImageUrl3;
-    private EditText etProductColors, etProductCondition, etProductWeight, etStoreName, etBrand;
+    private EditText etProductColors, etProductCondition, etProductWeight, etStoreName, etStoreImageUrl, etProductBrand, etProductLocation;
+    private CheckBox cbIsRecommended, cbIsBestSeller;
     private Button btnSaveProduct;
     private TextView tvTitle;
     private FirebaseFirestore db;
@@ -38,14 +40,23 @@ public class AdminAddEditProductActivity extends AppCompatActivity {
         etProductPrice = findViewById(R.id.etProductPrice);
         etProductCategory = findViewById(R.id.etProductCategory);
         etProductDescription = findViewById(R.id.etProductDescription);
+        
         etProductImageUrl1 = findViewById(R.id.etProductImageUrl1);
         etProductImageUrl2 = findViewById(R.id.etProductImageUrl2);
         etProductImageUrl3 = findViewById(R.id.etProductImageUrl3);
+        
         etProductColors = findViewById(R.id.etProductColors);
         etProductCondition = findViewById(R.id.etProductCondition);
         etProductWeight = findViewById(R.id.etProductWeight);
+        etProductBrand = findViewById(R.id.etProductBrand);
+        
         etStoreName = findViewById(R.id.etStoreName);
-        etBrand = findViewById(R.id.etBrand);
+        etStoreImageUrl = findViewById(R.id.etStoreImageUrl);
+        etProductLocation = findViewById(R.id.etProductLocation);
+        
+        cbIsRecommended = findViewById(R.id.cbIsRecommended);
+        cbIsBestSeller = findViewById(R.id.cbIsBestSeller);
+        
         btnSaveProduct = findViewById(R.id.btnSaveProduct);
 
         existingProduct = (Product) getIntent().getSerializableExtra("product");
@@ -78,8 +89,13 @@ public class AdminAddEditProductActivity extends AppCompatActivity {
         
         etProductCondition.setText(existingProduct.getCondition());
         etProductWeight.setText(existingProduct.getWeight());
+        etProductBrand.setText(existingProduct.getBrand());
         etStoreName.setText(existingProduct.getStoreName());
-        etBrand.setText(existingProduct.getBrand());
+        etStoreImageUrl.setText(existingProduct.getStoreImageUrl());
+        etProductLocation.setText(existingProduct.getLocation());
+        
+        cbIsRecommended.setChecked(existingProduct.isRecommended());
+        cbIsBestSeller.setChecked(existingProduct.isBestSeller());
     }
 
     private void saveProduct() {
@@ -93,13 +109,20 @@ public class AdminAddEditProductActivity extends AppCompatActivity {
         String colorsStr = etProductColors.getText().toString().trim();
         String condition = etProductCondition.getText().toString().trim();
         String weight = etProductWeight.getText().toString().trim();
+        String brand = etProductBrand.getText().toString().trim();
         String storeName = etStoreName.getText().toString().trim();
-        String brand = etBrand.getText().toString().trim();
+        String storeImageUrl = etStoreImageUrl.getText().toString().trim();
+        String location = etProductLocation.getText().toString().trim();
+        
+        boolean isRecommended = cbIsRecommended.isChecked();
+        boolean isBestSeller = cbIsBestSeller.isChecked();
 
         if (name.isEmpty() || priceStr.isEmpty() || category.isEmpty() || url1.isEmpty()) {
-            Toast.makeText(this, "Please fill required fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please fill required fields (Name, Price, Category, Main Image)", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        double price = Double.parseDouble(priceStr);
 
         // 1. Process Images
         List<String> imageUrls = new ArrayList<>();
@@ -107,22 +130,21 @@ public class AdminAddEditProductActivity extends AppCompatActivity {
         if (!url2.isEmpty()) imageUrls.add(url2);
         if (!url3.isEmpty()) imageUrls.add(url3);
 
-        // 2. Process Colors (Robust Hex parsing)
+        // 2. Process Colors
         List<String> colorList = new ArrayList<>();
         if (!colorsStr.isEmpty()) {
-            String[] parts = colorsStr.split("[,\\s]+"); // Split by comma or space
+            String[] parts = colorsStr.split("[,\\s]+");
             for (String part : parts) {
-                String hex = part.trim();
-                if (!hex.isEmpty()) {
-                    if (!hex.startsWith("#")) hex = "#" + hex; // Add # if missing
-                    colorList.add(hex);
+                String val = part.trim();
+                if (!val.isEmpty()) {
+                    colorList.add(val);
                 }
             }
         }
 
         Map<String, Object> productMap = new HashMap<>();
         productMap.put("name", name);
-        productMap.put("price", Double.parseDouble(priceStr));
+        productMap.put("price", price);
         productMap.put("category", category);
         productMap.put("description", description);
         productMap.put("imageUrl", url1);
@@ -130,15 +152,16 @@ public class AdminAddEditProductActivity extends AppCompatActivity {
         productMap.put("colors", colorList);
         productMap.put("condition", condition);
         productMap.put("weight", weight);
-        productMap.put("storeName", storeName);
         productMap.put("brand", brand);
+        productMap.put("storeName", storeName);
+        productMap.put("storeImageUrl", storeImageUrl);
+        productMap.put("location", location);
+        productMap.put("isRecommended", isRecommended);
+        productMap.put("isBestSeller", isBestSeller);
         
         if (existingProduct == null) {
-            productMap.put("rating", 4.8f);
+            productMap.put("rating", 0.0f);
             productMap.put("soldCount", 0);
-            productMap.put("location", "Online Store");
-            productMap.put("isBestSeller", false);
-            productMap.put("isRecommended", true);
         }
 
         if (existingProduct != null) {
