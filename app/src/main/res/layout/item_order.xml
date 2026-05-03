@@ -77,5 +77,16 @@
                 android:textSize="16sp" />
         </RelativeLayout>
 
+        <Button
+            android:id="@+id/btnWriteReview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Write a Review"
+            android:textAllCaps="false"
+            android:visibility="gone"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:textColor="@color/purple_accent"/>
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>
