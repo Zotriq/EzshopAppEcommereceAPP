@@ -18,7 +18,6 @@ public class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ColorViewHol
     private OnColorClickListener listener;
 
     public interface OnColorClickListener {
-        // Pass position so we can sync with the Image Slider
         void onColorClick(String colorHex, int position);
     }
 
@@ -38,10 +37,16 @@ public class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ColorViewHol
     public void onBindViewHolder(@NonNull ColorViewHolder holder, int position) {
         String hexColor = colorHexList.get(position);
 
-        GradientDrawable background = (GradientDrawable) holder.colorCircle.getBackground();
+        // .mutate() is crucial here to prevent all items from sharing the same color
+        GradientDrawable background = (GradientDrawable) holder.colorCircle.getBackground().mutate();
 
         if (hexColor != null && !hexColor.isEmpty()) {
-            background.setColor(Color.parseColor(hexColor));
+            try {
+                background.setColor(Color.parseColor(hexColor));
+            } catch (Exception e) {
+                // Fallback to grey if hex is invalid
+                background.setColor(Color.LTGRAY);
+            }
         }
 
         if (selectedPosition == position) {
