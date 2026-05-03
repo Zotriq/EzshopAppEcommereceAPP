@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 
@@ -175,6 +176,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
             db.collection("orders").add(order)
                     .addOnSuccessListener(ref -> {
+                        updateSoldCount();
                         sendOrderConfirmationNotification();
                         showSuccessDialog();
                     })
@@ -184,6 +186,13 @@ public class CheckoutActivity extends AppCompatActivity {
                         Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         }, 2000);
+    }
+
+    private void updateSoldCount() {
+        for (CartItem item : checkoutItemList) {
+            db.collection("products").document(item.getProductId())
+                    .update("soldCount", FieldValue.increment(item.getQuantity()));
+        }
     }
 
     private void sendOrderConfirmationNotification() {
