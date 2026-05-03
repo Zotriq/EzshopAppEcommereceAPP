@@ -9,6 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHolder> {
@@ -36,7 +38,15 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Category category = categoryList.get(position);
         holder.tvCategoryName.setText(category.getName());
-        holder.ivCategoryIcon.setImageResource(category.getIconResId());
+        
+        if (category.getImageUrl() != null && !category.getImageUrl().isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(category.getImageUrl())
+                    .placeholder(R.drawable.home)
+                    .into(holder.ivCategoryIcon);
+        } else {
+            holder.ivCategoryIcon.setImageResource(R.drawable.home);
+        }
         
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
