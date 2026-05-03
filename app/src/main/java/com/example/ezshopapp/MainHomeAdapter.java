@@ -32,6 +32,7 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private final List<Banner> banners;
     private final OnSearchListener searchListener;
     private final OnCategoryClickListener categoryClickListener;
+    private boolean hasUnreadNotifications = false;
 
     public interface OnSearchListener {
         void onSearch(String query);
@@ -50,6 +51,11 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         this.banners = banners;
         this.searchListener = searchListener;
         this.categoryClickListener = categoryClickListener;
+    }
+
+    public void setHasUnreadNotifications(boolean hasUnread) {
+        this.hasUnreadNotifications = hasUnread;
+        notifyItemChanged(0); // Update header
     }
 
     @Override
@@ -82,7 +88,7 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof HeaderViewHolder) {
-            ((HeaderViewHolder) holder).bind(categories);
+            ((HeaderViewHolder) holder).bind(categories, hasUnreadNotifications);
         } else if (holder instanceof BannersListViewHolder) {
             ((BannersListViewHolder) holder).bind(banners);
         } else if (holder instanceof BestSellersViewHolder) {
@@ -108,7 +114,8 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     static class HeaderViewHolder extends RecyclerView.ViewHolder {
         EditText searchEditText;
-        ImageView clearSearch;
+        ImageView clearSearch, btnNotification;
+        View notificationBadge;
         RecyclerView categoryRecyclerView;
         OnSearchListener searchListener;
         OnCategoryClickListener categoryListener;
@@ -119,6 +126,8 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             this.categoryListener = categoryListener;
             searchEditText = itemView.findViewById(R.id.searchEditText);
             clearSearch = itemView.findViewById(R.id.clearSearch);
+            btnNotification = itemView.findViewById(R.id.btnNotification);
+            notificationBadge = itemView.findViewById(R.id.notificationBadge);
             categoryRecyclerView = itemView.findViewById(R.id.categoryRecyclerView);
 
             searchEditText.addTextChangedListener(new TextWatcher() {
@@ -141,13 +150,22 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     searchEditText.setText("");
                 });
             }
+
+            if (btnNotification != null) {
+                btnNotification.setOnClickListener(v -> {
+                    itemView.getContext().startActivity(new Intent(itemView.getContext(), NotificationsActivity.class));
+                });
+            }
             
             if (categoryRecyclerView != null) {
                 categoryRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext(), LinearLayoutManager.HORIZONTAL, false));
             }
         }
 
-        void bind(List<Category> categories) {
+        void bind(List<Category> categories, boolean hasUnread) {
+            if (notificationBadge != null) {
+                notificationBadge.setVisibility(hasUnread ? View.VISIBLE : View.GONE);
+            }
             if (categoryRecyclerView != null && categories != null) {
                 CategoryAdapter adapter = new CategoryAdapter(categories, category -> {
                     if (categoryListener != null && category != null) {

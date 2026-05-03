@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private String currentCategory = "All";
     private String currentSearchQuery = "";
     private BottomNavigationView bottomNav;
+    private String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +45,12 @@ public class MainActivity extends AppCompatActivity {
         if (bottomNav != null) {
             bottomNav.setSelectedItemId(R.id.nav_home);
         }
+        checkNotifications();
     }
 
     private void init() {
         db = FirebaseFirestore.getInstance();
+        userId = FirebaseAuth.getInstance().getUid();
         
         allProducts = new ArrayList<>();
         bestSellersList = new ArrayList<>();
@@ -55,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
         bannerList = new ArrayList<>();
         
         categories = new ArrayList<>();
-        // Keep "All" as a static first entry
         categories.add(new Category("All", "")); 
 
         setupRecyclerView();
@@ -81,6 +83,34 @@ public class MainActivity extends AppCompatActivity {
         mainRecyclerView.setAdapter(mainHomeAdapter);
     }
 
+    private void checkNotifications() {
+        userId = FirebaseAuth.getInstance().getUid();
+        if (userId == null) return;
+
+        // Use ONLY userId filter to bypass Firestore Index requirements
+        db.collection("notifications")
+                .whereEqualTo("userId", userId)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) return;
+                    if (value != null) {
+                        boolean unreadFound = false;
+                        for (QueryDocumentSnapshot doc : value) {
+                            // Check both field name possibilities for robustness
+                            Boolean isRead = doc.getBoolean("isRead");
+                            if (isRead == null) isRead = doc.getBoolean("read");
+                            
+                            if (isRead != null && !isRead) {
+                                unreadFound = true;
+                                break;
+                            }
+                        }
+                        if (mainHomeAdapter != null) {
+                            mainHomeAdapter.setHasUnreadNotifications(unreadFound);
+                        }
+                    }
+                });
+    }
+
     private void fetchCategories() {
         db.collection("categories").addSnapshotListener((value, error) -> {
             if (error != null) return;
@@ -92,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     category.setDocumentId(doc.getId());
                     categories.add(category);
                 }
-                mainHomeAdapter.notifyItemChanged(0); // Assuming categories are the first item in MainHomeAdapter
+                mainHomeAdapter.notifyItemChanged(0);
             }
         });
     }
