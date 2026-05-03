@@ -4,11 +4,13 @@ import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -37,8 +39,11 @@ public class CheckoutActivity extends AppCompatActivity {
     private double finalTotal = 0;
 
     private EditText etAddress, etPromoCode;
+    private EditText etCardNumber, etCardExpiry, etCardCVV;
+    private LinearLayout layoutCardDetails;
     private TextView tvFinalTotal, btnApplyPromo;
     private RadioGroup rgPaymentMethods;
+    private Button btnOrderNow;
     private FirebaseFirestore db;
     private String userId;
 
@@ -50,7 +55,6 @@ public class CheckoutActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         userId = FirebaseAuth.getInstance().getUid();
 
-        // Get data from Intent
         checkoutItemList = (List<CartItem>) getIntent().getSerializableExtra("cartItems");
         subtotal = getIntent().getDoubleExtra("totalPrice", 0);
         finalTotal = subtotal;
@@ -71,14 +75,27 @@ public class CheckoutActivity extends AppCompatActivity {
         tvFinalTotal = findViewById(R.id.tvFinalTotal);
         btnApplyPromo = findViewById(R.id.btnApplyPromo);
         rgPaymentMethods = findViewById(R.id.rgPaymentMethods);
+        btnOrderNow = findViewById(R.id.btnOrderNow);
+
+        layoutCardDetails = findViewById(R.id.layoutCardDetails);
+        etCardNumber = findViewById(R.id.etCardNumber);
+        etCardExpiry = findViewById(R.id.etCardExpiry);
+        etCardCVV = findViewById(R.id.etCardCVV);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         btnApplyPromo.setOnClickListener(v -> applyPromoCode());
-        findViewById(R.id.btnOrderNow).setOnClickListener(v -> placeOrder());
+        btnOrderNow.setOnClickListener(v -> placeOrder());
+
+        rgPaymentMethods.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rbCard) {
+                layoutCardDetails.setVisibility(View.VISIBLE);
+            } else {
+                layoutCardDetails.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void setupCheckoutList() {
-        // Reusing CartAdapter with isCheckoutMode = true to hide edit buttons
         checkoutAdapter = new CartAdapter(checkoutItemList, null, true);
         checkoutRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         checkoutRecyclerView.setAdapter(checkoutAdapter);
@@ -86,41 +103,26 @@ public class CheckoutActivity extends AppCompatActivity {
 
     private void applyPromoCode() {
         String code = etPromoCode.getText().toString().trim();
+        if (TextUtils.isEmpty(code)) return;
 
-        if (TextUtils.isEmpty(code)) {
-            Toast.makeText(this, "Please enter a code", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Search for the promo code in the "promos" collection using the code as Document ID
         db.collection("promos").document(code).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        Promo promo = documentSnapshot.toObject(Promo.class);
-                        
-                        if (promo != null) {
-                            // 1. Check if the subtotal meets the minimum order requirement
-                            if (subtotal >= promo.getMinOrderAmount()) {
-                                
-                                // 2. Calculate discount based on type: "percentage" or "fixed"
-                                if ("percentage".equals(promo.getType())) {
-                                    discount = subtotal * (promo.getDiscountValue() / 100);
-                                } else {
-                                    discount = promo.getDiscountValue();
-                                }
-
-                                finalTotal = subtotal - discount;
-                                updateTotalDisplay();
-                                Toast.makeText(this, "Promo Applied Successfully!", Toast.LENGTH_SHORT).show();
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        Promo promo = doc.toObject(Promo.class);
+                        if (promo != null && subtotal >= promo.getMinOrderAmount()) {
+                            if ("percentage".equals(promo.getType())) {
+                                discount = subtotal * (promo.getDiscountValue() / 100);
                             } else {
-                                Toast.makeText(this, "Min order for this code is $ " + promo.getMinOrderAmount(), Toast.LENGTH_SHORT).show();
+                                discount = promo.getDiscountValue();
                             }
+                            finalTotal = subtotal - discount;
+                            updateTotalDisplay();
+                            Toast.makeText(this, "Promo Applied!", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(this, "Invalid or Expired Promo Code", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Invalid Code", Toast.LENGTH_SHORT).show();
                     }
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Error checking promo: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                });
     }
 
     private void updateTotalDisplay() {
@@ -130,38 +132,58 @@ public class CheckoutActivity extends AppCompatActivity {
     private void placeOrder() {
         String address = etAddress.getText().toString().trim();
         if (TextUtils.isEmpty(address)) {
-            etAddress.setError("Address is required");
+            etAddress.setError("Address required");
             return;
         }
 
         int selectedId = rgPaymentMethods.getCheckedRadioButtonId();
         if (selectedId == -1) {
-            Toast.makeText(this, "Please select a payment method", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Select payment method", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        RadioButton rbSelected = findViewById(selectedId);
-        // Extract only the first line of text for the payment method name
-        String paymentMethod = rbSelected.getText().toString().split("\n")[0];
+        if (selectedId == R.id.rbCard) {
+            if (etCardNumber.getText().length() < 16) {
+                etCardNumber.setError("Invalid Card Number");
+                return;
+            }
+            if (TextUtils.isEmpty(etCardExpiry.getText())) {
+                etCardExpiry.setError("Required");
+                return;
+            }
+            if (etCardCVV.getText().length() < 3) {
+                etCardCVV.setError("Invalid CVV");
+                return;
+            }
+        }
 
-        Map<String, Object> order = new HashMap<>();
-        order.put("userId", userId);
-        order.put("items", checkoutItemList);
-        order.put("totalAmount", finalTotal);
-        order.put("discountAmount", discount);
-        order.put("address", address);
-        order.put("paymentMethod", paymentMethod);
-        order.put("status", "Pending");
-        order.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());
+        // Simulate "Processing" state
+        btnOrderNow.setEnabled(false);
+        btnOrderNow.setText("Processing...");
 
-        db.collection("orders")
-                .add(order)
-                .addOnSuccessListener(documentReference -> {
-                    showSuccessDialog();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(CheckoutActivity.this, "Failed to place order: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        new Handler().postDelayed(() -> {
+            RadioButton rbSelected = findViewById(selectedId);
+            String paymentMethod = rbSelected.getText().toString().split("\n")[0];
+
+            Map<String, Object> order = new HashMap<>();
+            order.put("userId", userId);
+            order.put("items", checkoutItemList);
+            order.put("totalAmount", finalTotal);
+            order.put("address", address);
+            order.put("paymentMethod", paymentMethod);
+            order.put("status", "Pending");
+            order.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());
+
+            db.collection("orders").add(order)
+                    .addOnSuccessListener(ref -> {
+                        showSuccessDialog();
+                    })
+                    .addOnFailureListener(e -> {
+                        btnOrderNow.setEnabled(true);
+                        btnOrderNow.setText("PLACE ORDER");
+                        Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }, 2000); // 2 second simulation
     }
 
     private void showSuccessDialog() {
@@ -176,20 +198,17 @@ public class CheckoutActivity extends AppCompatActivity {
             dialog.dismiss();
             clearCartAndFinish();
         });
-
         dialog.show();
     }
 
     private void clearCartAndFinish() {
-        db.collection("cart")
-                .whereEqualTo("userId", userId)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+        db.collection("cart").whereEqualTo("userId", userId).get()
+                .addOnSuccessListener(snaps -> {
                     WriteBatch batch = db.batch();
-                    for (com.google.firebase.firestore.DocumentSnapshot doc : queryDocumentSnapshots) {
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : snaps) {
                         batch.delete(doc.getReference());
                     }
-                    batch.commit().addOnSuccessListener(aVoid -> finish());
+                    batch.commit().addOnSuccessListener(v -> finish());
                 });
     }
 }
