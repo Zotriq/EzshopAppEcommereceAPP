@@ -2,13 +2,14 @@ package com.example.ezshopapp;
 
 public class Category {
     private String name;
-    private int iconResId;
+    private String imageUrl; // Changed from iconResId to imageUrl for dynamic loading
+    private String documentId;
 
     public Category() {}
 
-    public Category(String name, int iconResId) {
+    public Category(String name, String imageUrl) {
         this.name = name;
-        this.iconResId = iconResId;
+        this.imageUrl = imageUrl;
     }
 
     public String getName() {
@@ -19,11 +20,19 @@ public class Category {
         this.name = name;
     }
 
-    public int getIconResId() {
-        return iconResId;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setIconResId(int iconResId) {
-        this.iconResId = iconResId;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(String documentId) {
+        this.documentId = documentId;
     }
 }
