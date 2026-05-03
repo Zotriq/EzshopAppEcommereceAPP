@@ -3,6 +3,7 @@ package com.example.ezshopapp;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,9 +16,19 @@ import java.util.Locale;
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
 
     private List<Order> orderList;
+    private OnOrderClickListener listener;
+
+    public interface OnOrderClickListener {
+        void onWriteReviewClick(Order order);
+    }
 
     public OrderAdapter(List<Order> orderList) {
         this.orderList = orderList;
+    }
+
+    public OrderAdapter(List<Order> orderList, OnOrderClickListener listener) {
+        this.orderList = orderList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -40,7 +51,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         holder.tvOrderStatus.setText(order.getStatus());
         
-        // Build items string
         StringBuilder itemsBuilder = new StringBuilder();
         if (order.getItems() != null) {
             for (int i = 0; i < order.getItems().size(); i++) {
@@ -53,6 +63,19 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         }
         holder.tvOrderItems.setText(itemsBuilder.toString());
         holder.tvOrderTotal.setText(String.format(Locale.getDefault(), "$ %.2f", order.getTotalAmount()));
+
+        // Show "Write Review" button ONLY if status is Completed
+        if ("Completed".equalsIgnoreCase(order.getStatus())) {
+            holder.btnWriteReview.setVisibility(View.VISIBLE);
+        } else {
+            holder.btnWriteReview.setVisibility(View.GONE);
+        }
+
+        holder.btnWriteReview.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onWriteReviewClick(order);
+            }
+        });
     }
 
     @Override
@@ -62,6 +85,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     public static class OrderViewHolder extends RecyclerView.ViewHolder {
         TextView tvOrderDate, tvOrderStatus, tvOrderItems, tvOrderTotal;
+        Button btnWriteReview;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -69,6 +93,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             tvOrderStatus = itemView.findViewById(R.id.tvOrderStatus);
             tvOrderItems = itemView.findViewById(R.id.tvOrderItems);
             tvOrderTotal = itemView.findViewById(R.id.tvOrderTotal);
+            btnWriteReview = itemView.findViewById(R.id.btnWriteReview);
         }
     }
 }
