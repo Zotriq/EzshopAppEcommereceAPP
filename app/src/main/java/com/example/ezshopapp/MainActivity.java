@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         fetchCategories();
         fetchProducts();
         setupBottomNav();
+        checkNotifications();
     }
 
     private void setupRecyclerView() {
@@ -84,10 +86,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkNotifications() {
-        userId = FirebaseAuth.getInstance().getUid();
         if (userId == null) return;
 
-        // Use ONLY userId filter to bypass Firestore Index requirements
         db.collection("notifications")
                 .whereEqualTo("userId", userId)
                 .addSnapshotListener((value, error) -> {
@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
                     if (value != null) {
                         boolean unreadFound = false;
                         for (QueryDocumentSnapshot doc : value) {
-                            // Check both field name possibilities for robustness
                             Boolean isRead = doc.getBoolean("isRead");
                             if (isRead == null) isRead = doc.getBoolean("read");
                             

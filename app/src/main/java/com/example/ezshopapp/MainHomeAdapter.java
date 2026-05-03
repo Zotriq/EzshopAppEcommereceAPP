@@ -43,8 +43,8 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public MainHomeAdapter(List<Product> bestSellers, List<Product> recommendations, 
-                           List<Category> categories, List<Banner> banners, OnSearchListener searchListener, 
-                           OnCategoryClickListener categoryClickListener) {
+                           List<Category> categories, List<Banner> banners, 
+                           OnSearchListener searchListener, OnCategoryClickListener categoryClickListener) {
         this.bestSellers = bestSellers;
         this.recommendations = recommendations;
         this.categories = categories;
@@ -55,7 +55,7 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public void setHasUnreadNotifications(boolean hasUnread) {
         this.hasUnreadNotifications = hasUnread;
-        notifyItemChanged(0); // Update header
+        notifyItemChanged(0);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } else if (viewType == TYPE_BEST_SELLERS) {
             return new BestSellersViewHolder(inflater.inflate(R.layout.item_best_sellers_list, parent, false));
         } else if (viewType == TYPE_RECOMMENDATION_TITLE) {
-            return new TitleViewHolder(inflater.inflate(R.layout.item_section_title, parent, false), "Recommendation");
+            return new TitleViewHolder(inflater.inflate(R.layout.item_section_title, parent, false), "Recommendation", true);
         } else {
             return new RecommendationViewHolder(inflater.inflate(R.layout.item_recommendation, parent, false));
         }
@@ -224,10 +224,12 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     static class TitleViewHolder extends RecyclerView.ViewHolder {
         TextView title, seeAll;
         String titleText;
+        boolean showSeeAll;
 
-        public TitleViewHolder(@NonNull View itemView, String titleText) {
+        public TitleViewHolder(@NonNull View itemView, String titleText, boolean showSeeAll) {
             super(itemView);
             this.titleText = titleText;
+            this.showSeeAll = showSeeAll;
             title = itemView.findViewById(R.id.sectionTitle);
             seeAll = itemView.findViewById(R.id.seeAllRecommended);
         }
@@ -235,12 +237,15 @@ public class MainHomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void bind() {
             if (title != null) title.setText(titleText);
             if (seeAll != null) {
-                seeAll.setOnClickListener(v -> {
-                    Intent intent = new Intent(itemView.getContext(), SeeAllActivity.class);
-                    intent.putExtra("category", "recommended");
-                    intent.putExtra("title", titleText);
-                    itemView.getContext().startActivity(intent);
-                });
+                seeAll.setVisibility(showSeeAll ? View.VISIBLE : View.GONE);
+                if (showSeeAll) {
+                    seeAll.setOnClickListener(v -> {
+                        Intent intent = new Intent(itemView.getContext(), SeeAllActivity.class);
+                        intent.putExtra("category", "recommended");
+                        intent.putExtra("title", titleText);
+                        itemView.getContext().startActivity(intent);
+                    });
+                }
             }
         }
     }
