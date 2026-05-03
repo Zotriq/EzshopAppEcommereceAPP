@@ -55,16 +55,12 @@ public class MainActivity extends AppCompatActivity {
         bannerList = new ArrayList<>();
         
         categories = new ArrayList<>();
-        categories.add(new Category("All", R.drawable.home));
-        categories.add(new Category("Laptop", R.drawable.home));
-        categories.add(new Category("Smartphone", android.R.drawable.ic_menu_call));
-        categories.add(new Category("Monitor", android.R.drawable.ic_menu_gallery));
-        categories.add(new Category("Mouse", android.R.drawable.ic_menu_manage));
-        categories.add(new Category("Keyboard", android.R.drawable.ic_menu_edit));
-        categories.add(new Category("Headset", android.R.drawable.ic_menu_view));
+        // Keep "All" as a static first entry
+        categories.add(new Category("All", "")); 
 
         setupRecyclerView();
         fetchBanners();
+        fetchCategories();
         fetchProducts();
         setupBottomNav();
     }
@@ -85,6 +81,22 @@ public class MainActivity extends AppCompatActivity {
         mainRecyclerView.setAdapter(mainHomeAdapter);
     }
 
+    private void fetchCategories() {
+        db.collection("categories").addSnapshotListener((value, error) -> {
+            if (error != null) return;
+            if (value != null) {
+                categories.clear();
+                categories.add(new Category("All", ""));
+                for (QueryDocumentSnapshot doc : value) {
+                    Category category = doc.toObject(Category.class);
+                    category.setDocumentId(doc.getId());
+                    categories.add(category);
+                }
+                mainHomeAdapter.notifyItemChanged(0); // Assuming categories are the first item in MainHomeAdapter
+            }
+        });
+    }
+
     private void fetchBanners() {
         db.collection("banners")
                 .get()
@@ -96,8 +108,6 @@ public class MainActivity extends AppCompatActivity {
                             bannerList.add(banner);
                         }
                         mainHomeAdapter.notifyItemChanged(1);
-                    } else {
-                        Toast.makeText(this, "Error getting banners: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -123,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                                      (product.getCategory() != null && product.getCategory().equalsIgnoreCase(currentCategory));
             
             boolean matchesSearch = lowerCaseQuery.isEmpty() || 
-                                    product.getName().toLowerCase().contains(lowerCaseQuery);
+                                    (product.getName() != null && product.getName().toLowerCase().contains(lowerCaseQuery));
 
             if (matchesCategory && matchesSearch) {
                 if (product.isBestSeller()) {
@@ -139,18 +149,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void fetchProducts() {
         db.collection("products")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) return;
+                    if (value != null) {
                         allProducts.clear();
-                        for (QueryDocumentSnapshot document : task.getResult()) {
+                        for (QueryDocumentSnapshot document : value) {
                             Product product = document.toObject(Product.class);
                             product.setDocumentId(document.getId());
                             allProducts.add(product);
                         }
                         applyFilters();
-                    } else {
-                        Toast.makeText(this, "Error getting products: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
