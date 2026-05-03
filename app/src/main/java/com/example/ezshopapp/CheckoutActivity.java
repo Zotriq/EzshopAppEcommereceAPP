@@ -157,7 +157,6 @@ public class CheckoutActivity extends AppCompatActivity {
             }
         }
 
-        // Simulate "Processing" state
         btnOrderNow.setEnabled(false);
         btnOrderNow.setText("Processing...");
 
@@ -176,6 +175,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
             db.collection("orders").add(order)
                     .addOnSuccessListener(ref -> {
+                        sendOrderConfirmationNotification();
                         showSuccessDialog();
                     })
                     .addOnFailureListener(e -> {
@@ -183,7 +183,17 @@ public class CheckoutActivity extends AppCompatActivity {
                         btnOrderNow.setText("PLACE ORDER");
                         Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
-        }, 2000); // 2 second simulation
+        }, 2000);
+    }
+
+    private void sendOrderConfirmationNotification() {
+        if (userId == null) return;
+        Notification notification = new Notification(
+                userId,
+                "Order Placed successfully!",
+                "Hooray! Your order has been placed. Expect delivery in 2-3 business days."
+        );
+        db.collection("notifications").add(notification);
     }
 
     private void showSuccessDialog() {
