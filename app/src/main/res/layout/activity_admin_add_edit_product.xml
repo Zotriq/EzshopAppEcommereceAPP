@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Product"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"/>
+
+        <EditText
+            android:id="@+id/etProductName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Product Name"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etProductPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Price"
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etProductCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Category"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etProductDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:gravity="top"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Multiple Image URLs -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Image URLs (Main + 2 Gallery Images)"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/etProductImageUrl1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Main Image URL"
+            android:inputType="textUri"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/etProductImageUrl2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Image URL 2"
+            android:inputType="textUri"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/etProductImageUrl3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Image URL 3"
+            android:inputType="textUri"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Colors, Condition, Weight -->
+        <EditText
+            android:id="@+id/etProductColors"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Colors (Hex codes: #FF0000, #000000)"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etProductCondition"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Condition (e.g. New, Used)"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etProductWeight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Weight (e.g. 1.2 kg)"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etStoreName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Store Name"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etBrand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Brand"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btnSaveProduct"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Save Product"
+            android:backgroundTint="#28A745"
+            android:textColor="#FFFFFF"/>
+
+    </LinearLayout>
+</ScrollView>
