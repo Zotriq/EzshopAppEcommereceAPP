@@ -28,7 +28,6 @@ import java.util.Map;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
-    private static final String TAG = "ProductDetailActivity";
     private Product product;
     private List<Review> reviewList;
     private ReviewAdapter reviewAdapter;
@@ -89,7 +88,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         soldCountText.setText("|  Sold " + product.getFormattedSoldCount());
         
         condition.setText(": " + (product.getCondition() != null ? product.getCondition() : "New"));
-        weight.setText(": " + (product.getWeight() != null ? product.getWeight() : "500 Gram"));
+        weight.setText(": " + (product.getWeight() != null ? product.getWeight() : "N/A"));
         category.setText(": " + product.getCategory());
         brand.setText(": " + (product.getBrand() != null ? product.getBrand() : "Brand"));
         description.setText(product.getDescription());
@@ -114,115 +113,32 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         btnAddToCart.setOnClickListener(v -> addToCart());
-        
         btnWishlist.setOnClickListener(v -> toggleWishlist());
     }
 
-    private void checkWishlistStatus() {
-        if (userId == null) return;
-
-        db.collection("wishlist")
-                .document(userId + "_" + product.getDocumentId())
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        isInWishlist = true;
-                        btnWishlist.setImageResource(android.R.drawable.btn_star_big_on);
-                    } else {
-                        isInWishlist = false;
-                        btnWishlist.setImageResource(android.R.drawable.btn_star_big_off);
-                    }
-                });
-    }
-
-    private void toggleWishlist() {
-        if (userId == null) {
-            Toast.makeText(this, "Please login to use Wishlist", Toast.LENGTH_SHORT).show();
+    private void setupColorList() {
+        RecyclerView colorRecycler = findViewById(R.id.colorRecyclerView);
+        List<String> colors = product.getColors();
+        
+        if (colors == null || colors.isEmpty()) {
+            findViewById(R.id.labelChooseColor).setVisibility(View.GONE);
+            colorRecycler.setVisibility(View.GONE);
             return;
         }
 
-        DocumentReference docRef = db.collection("wishlist").document(userId + "_" + product.getDocumentId());
+        selectedColor = colors.get(0);
 
-        if (isInWishlist) {
-            docRef.delete().addOnSuccessListener(aVoid -> {
-                isInWishlist = false;
-                btnWishlist.setImageResource(android.R.drawable.btn_star_big_off);
-                Toast.makeText(this, "Removed from Wishlist", Toast.LENGTH_SHORT).show();
-            });
-        } else {
-            Map<String, Object> wishlistItem = new HashMap<>();
-            wishlistItem.put("userId", userId);
-            wishlistItem.put("productId", product.getDocumentId());
-            wishlistItem.put("name", product.getName());
-            wishlistItem.put("price", product.getPrice());
-            wishlistItem.put("imageUrl", product.getImageUrl());
-            wishlistItem.put("rating", product.getRating());
-            wishlistItem.put("soldCount", product.getSoldCount());
-            wishlistItem.put("location", product.getLocation());
-
-            docRef.set(wishlistItem).addOnSuccessListener(aVoid -> {
-                isInWishlist = true;
-                btnWishlist.setImageResource(android.R.drawable.btn_star_big_on);
-                Toast.makeText(this, "Added to Wishlist", Toast.LENGTH_SHORT).show();
-            });
-        }
-    }
-
-    private void saveToLastSeen() {
-        if (userId == null || product.getDocumentId() == null) return;
-
-        Map<String, Object> lastSeenData = new HashMap<>();
-        lastSeenData.put("userId", userId);
-        lastSeenData.put("productId", product.getDocumentId());
-        lastSeenData.put("timestamp", FieldValue.serverTimestamp());
-        lastSeenData.put("name", product.getName());
-        lastSeenData.put("price", product.getPrice());
-        lastSeenData.put("imageUrl", product.getImageUrl());
-        lastSeenData.put("rating", product.getRating());
-        lastSeenData.put("soldCount", product.getSoldCount());
-        lastSeenData.put("location", product.getLocation());
-
-        db.collection("last_seen")
-                .document(userId + "_" + product.getDocumentId())
-                .set(lastSeenData);
-    }
-
-    private void addToCart() {
-        if (userId == null) {
-            Toast.makeText(this, "Please login to add items to cart", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (selectedColor == null && product.getColors() != null && !product.getColors().isEmpty()) {
-            selectedColor = product.getColors().get(0);
-        }
-
-        db.collection("cart")
-                .whereEqualTo("userId", userId)
-                .whereEqualTo("productId", product.getDocumentId())
-                .whereEqualTo("selectedColor", selectedColor)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        if (!task.getResult().isEmpty()) {
-                            String docId = task.getResult().getDocuments().get(0).getId();
-                            db.collection("cart").document(docId)
-                                    .update("quantity", FieldValue.increment(1));
-                        } else {
-                            CartItem cartItem = new CartItem(
-                                    userId,
-                                    product.getDocumentId(),
-                                    product.getName(),
-                                    product.getPrice(),
-                                    product.getImageUrl(),
-                                    selectedColor,
-                                    1
-                            );
-                            db.collection("cart").add(cartItem);
-                        }
-                        Toast.makeText(ProductDetailActivity.this, "Item added to cart", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        ColorAdapter adapter = new ColorAdapter(colors, (hex, position) -> {
+            selectedColor = hex;
+            // Optional: if images match colors, sync them
+            if (product.getImageUrls() != null && position < product.getImageUrls().size()) {
+                productViewPager.setCurrentItem(position, true);
+            }
+        });
+        
+        // Ensure horizontal layout
+        colorRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        colorRecycler.setAdapter(adapter);
     }
 
     private void setupImageSlider() {
@@ -234,24 +150,6 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         ImageSliderAdapter adapter = new ImageSliderAdapter(images);
         productViewPager.setAdapter(adapter);
-    }
-
-    private void setupColorList() {
-        RecyclerView colorRecycler = findViewById(R.id.colorRecyclerView);
-        List<String> colors = product.getColors();
-        if (colors == null) colors = new ArrayList<>();
-
-        if (!colors.isEmpty()) {
-            selectedColor = colors.get(0);
-        }
-
-        ColorAdapter adapter = new ColorAdapter(colors, (hex, position) -> {
-            selectedColor = hex;
-            if (product.getImageUrls() != null && position < product.getImageUrls().size()) {
-                productViewPager.setCurrentItem(position, true);
-            }
-        });
-        colorRecycler.setAdapter(adapter);
     }
 
     private void setupReviewList() {
@@ -279,6 +177,56 @@ public class ProductDetailActivity extends AppCompatActivity {
                             reviewList.add(review);
                         }
                         reviewAdapter.notifyDataSetChanged();
+                    }
+                });
+    }
+
+    private void checkWishlistStatus() {
+        if (userId == null) return;
+        db.collection("wishlist").document(userId + "_" + product.getDocumentId()).get()
+                .addOnSuccessListener(doc -> {
+                    isInWishlist = doc.exists();
+                    btnWishlist.setImageResource(isInWishlist ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
+                });
+    }
+
+    private void toggleWishlist() {
+        if (userId == null) { Toast.makeText(this, "Please login", Toast.LENGTH_SHORT).show(); return; }
+        DocumentReference docRef = db.collection("wishlist").document(userId + "_" + product.getDocumentId());
+        if (isInWishlist) {
+            docRef.delete().addOnSuccessListener(v -> { isInWishlist = false; btnWishlist.setImageResource(android.R.drawable.btn_star_big_off); });
+        } else {
+            Map<String, Object> item = new HashMap<>();
+            item.put("userId", userId); item.put("productId", product.getDocumentId());
+            item.put("name", product.getName()); item.put("price", product.getPrice());
+            item.put("imageUrl", product.getImageUrl());
+            docRef.set(item).addOnSuccessListener(v -> { isInWishlist = true; btnWishlist.setImageResource(android.R.drawable.btn_star_big_on); });
+        }
+    }
+
+    private void saveToLastSeen() {
+        if (userId == null || product.getDocumentId() == null) return;
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", userId); data.put("productId", product.getDocumentId());
+        data.put("timestamp", FieldValue.serverTimestamp());
+        data.put("name", product.getName()); data.put("price", product.getPrice());
+        data.put("imageUrl", product.getImageUrl());
+        db.collection("last_seen").document(userId + "_" + product.getDocumentId()).set(data);
+    }
+
+    private void addToCart() {
+        if (userId == null) { Toast.makeText(this, "Please login", Toast.LENGTH_SHORT).show(); return; }
+        if (selectedColor == null && product.getColors() != null && !product.getColors().isEmpty()) selectedColor = product.getColors().get(0);
+        db.collection("cart").whereEqualTo("userId", userId).whereEqualTo("productId", product.getDocumentId()).whereEqualTo("selectedColor", selectedColor).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (!task.getResult().isEmpty()) {
+                            db.collection("cart").document(task.getResult().getDocuments().get(0).getId()).update("quantity", FieldValue.increment(1));
+                        } else {
+                            CartItem item = new CartItem(userId, product.getDocumentId(), product.getName(), product.getPrice(), product.getImageUrl(), selectedColor, 1);
+                            db.collection("cart").add(item);
+                        }
+                        Toast.makeText(this, "Added to cart", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
