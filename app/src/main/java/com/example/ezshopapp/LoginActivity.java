@@ -19,6 +19,10 @@ public class LoginActivity extends AppCompatActivity {
     private TextView goToRegister;
     private FirebaseAuth mAuth;
 
+    // Hardcoded Admin Credentials
+    private static final String ADMIN_EMAIL = "admin@ezshop.com";
+    private static final String ADMIN_PASSWORD = "admin123";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +56,14 @@ public class LoginActivity extends AppCompatActivity {
 
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check if Admin
+        if (email.equals(ADMIN_EMAIL) && password.equals(ADMIN_PASSWORD)) {
+            Toast.makeText(this, "Admin Login Successful", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(LoginActivity.this, AdminDashboardActivity.class));
+            finish();
             return;
         }
 
