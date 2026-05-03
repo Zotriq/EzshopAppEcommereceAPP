@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -11,6 +13,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.EzshopApp">
+
+        <activity
+            android:name=".AdminOrdersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminAddEditProductActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminProductsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminCategoriesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminDashboardActivity"
+            android:exported="false" />
         <activity
             android:name=".OrderHistoryActivity"
             android:exported="false" />
