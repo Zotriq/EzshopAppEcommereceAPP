@@ -19,6 +19,15 @@
             android:textStyle="bold"
             android:layout_marginBottom="24dp"/>
 
+        <!-- Section: Basic Information -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Basic Information"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginBottom="8dp"/>
+
         <EditText
             android:id="@+id/etProductName"
             android:layout_width="match_parent"
@@ -39,7 +48,7 @@
             android:id="@+id/etProductCategory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Category"
+            android:hint="Category (e.g. Smartphone, Laptop)"
             android:inputType="textCapWords"
             android:layout_marginBottom="12dp"/>
 
@@ -51,14 +60,15 @@
             android:inputType="textMultiLine"
             android:minLines="3"
             android:gravity="top"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="24dp"/>
 
-        <!-- Multiple Image URLs -->
+        <!-- Section: Media -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Image URLs (Main + 2 Gallery Images)"
+            android:text="Media (Image URLs)"
             android:textStyle="bold"
+            android:textColor="@color/black"
             android:layout_marginBottom="8dp"/>
 
         <EditText
@@ -73,7 +83,7 @@
             android:id="@+id/etProductImageUrl2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Image URL 2"
+            android:hint="Gallery Image URL 2"
             android:inputType="textUri"
             android:layout_marginBottom="8dp"/>
 
@@ -81,16 +91,31 @@
             android:id="@+id/etProductImageUrl3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Image URL 3"
+            android:hint="Gallery Image URL 3"
             android:inputType="textUri"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Section: Specifications -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Specifications"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/etProductBrand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Brand Name"
             android:layout_marginBottom="12dp"/>
 
-        <!-- Colors, Condition, Weight -->
         <EditText
             android:id="@+id/etProductColors"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Colors (Hex codes: #FF0000, #000000)"
+            android:hint="Colors (e.g. Red, Blue or Hex codes)"
             android:layout_marginBottom="12dp"/>
 
         <EditText
@@ -104,8 +129,17 @@
             android:id="@+id/etProductWeight"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Weight (e.g. 1.2 kg)"
-            android:layout_marginBottom="12dp"/>
+            android:hint="Weight (e.g. 500 Gram)"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Section: Store & Visibility -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Store &amp; Visibility"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginBottom="8dp"/>
 
         <EditText
             android:id="@+id/etStoreName"
@@ -115,11 +149,34 @@
             android:layout_marginBottom="12dp"/>
 
         <EditText
-            android:id="@+id/etBrand"
+            android:id="@+id/etStoreImageUrl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Brand"
-            android:layout_marginBottom="24dp"/>
+            android:hint="Store Logo URL"
+            android:inputType="textUri"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etProductLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Location (e.g. Pakistan)"
+            android:layout_marginBottom="16dp"/>
+
+        <CheckBox
+            android:id="@+id/cbIsRecommended"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Feature in Recommendations"
+            android:checked="true"
+            android:layout_marginBottom="8dp"/>
+
+        <CheckBox
+            android:id="@+id/cbIsBestSeller"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mark as Best Seller"
+            android:layout_marginBottom="32dp"/>
 
         <Button
             android:id="@+id/btnSaveProduct"
@@ -127,7 +184,8 @@
             android:layout_height="56dp"
             android:text="Save Product"
             android:backgroundTint="#28A745"
-            android:textColor="#FFFFFF"/>
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="20dp"/>
 
     </LinearLayout>
 </ScrollView>
