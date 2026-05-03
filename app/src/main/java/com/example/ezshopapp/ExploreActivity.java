@@ -77,13 +77,6 @@ public class ExploreActivity extends AppCompatActivity {
 
     private void setupCategories() {
         categories = new ArrayList<>();
-        categories.add(new Category("Laptop", R.drawable.home));
-        categories.add(new Category("Smartphone", android.R.drawable.ic_menu_call));
-        categories.add(new Category("Monitor", android.R.drawable.ic_menu_gallery));
-        categories.add(new Category("Computer", android.R.drawable.ic_menu_view));
-        categories.add(new Category("Mouse", android.R.drawable.ic_menu_manage));
-        categories.add(new Category("Keyboard", android.R.drawable.ic_menu_edit));
-
         categoryAdapter = new CategoryAdapter(categories, category -> {
             etSearch.setText(category.getName());
             filterByCategory(category.getName());
@@ -92,6 +85,30 @@ public class ExploreActivity extends AppCompatActivity {
         categoryRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         categoryRecyclerView.setAdapter(categoryAdapter);
         categoryRecyclerView.setNestedScrollingEnabled(false);
+
+        fetchCategories();
+    }
+
+    private void fetchCategories() {
+        db.collection("categories").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                categories.clear();
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    Category category = document.toObject(Category.class);
+                    category.setDocumentId(document.getId());
+                    categories.add(category);
+                }
+                
+                // If no categories in Firestore yet, show placeholders (optional)
+                if (categories.isEmpty()) {
+                     // Add some defaults if you want, or just leave it empty for admin to add
+                }
+                
+                categoryAdapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(this, "Failed to load categories", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupTrendingSearches() {
